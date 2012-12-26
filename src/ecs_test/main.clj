@@ -1,20 +1,30 @@
 (ns ecs-test.main
-  (:use (ecs-test core)))
+  (:use (ecs-test core)
+        (ecs-test.systems rendering position))
+  (:import '(ecs-test.systems.rendering.Visual)
+           '(ecs-test.systems.movement Position Direction)))
 
-(comment
-  (:import ecs_test.core.Entity
-           ecs_test.components.Position
-           ecs_test.components.Visual)
+(def entities (atom
+      { (make-entity (make-comp Position 0 0 0)
+                     (make-comp Direction :S
+                     (make-comp Visual "player_down"))) }))
 
+(defn paint-world [c g]
+  (dosync
+    ; apply relevant compfns to all entities
+    ))
 
-(defn main []
-  (let [e1 (defentity (Position. 1 2 3)
-                      (Visual. :player-down 200 200))]
-    (println (str "e1: " (get-components e1)))
-    (println (str "comps: " (:comps e1)))
-    (println (str "X: " (:x ((:comps e1) "Position"))))
-    (println (str "X-position of e1: " (get-component e1 "Position")))
-    (println (str "Y-position of e1: " (:y (get-component e1 "Position"))))))
+(defn start-game []
+  (let [screen (canvas
+                 :id :gamescreen
+                 :paint paint-world
+                 :size [350 :by 350])
+        t      (timer (fn [e] (repaint! screen)) :delay 60)
+        f      (frame :title "My Game"
+                      :size [350 :by 350]
+                      :content screen)]
+    (native!)
+    (listen f :key-pressed  key-dispatch
+              :key-released something)
+    (-> f pack! show!)))
 
-(main)
-)

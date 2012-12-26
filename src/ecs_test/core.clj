@@ -1,6 +1,9 @@
 (ns ecs-test.core
   (:use (ecs-test unique)))
 
+(defn splitlast [a-str regex]
+  (last (clojure.string/split a-str regex)))
+
 ;; Components
 
 (defprotocol IComponent
@@ -37,12 +40,16 @@
   IEntity
   (get-ent-id [this] (:id this))
   (get-comp [this ctype] ((:comps this) ctype))
-  (get-comps [this] (vals (:comps this)))
-  (assoc-comp "Use for adding or updating comps"
-    [this partial-comp] 
+  ;(get-comps [this] (vals (:comps this)))
+  (get-comps [this] (:comps this))
+  (assoc-comp [this partial-comp] 
+    "Use for adding or updating comps"
     (let [id (get-ent-id this)
           c (assoc-entity-id id partial-comp)]
-      (->Entity id (assoc (:comps this) (class c) c))))
+      (->Entity id (assoc (:comps this) 
+                          (keyword (splitlast (str (class c)) #"\."))
+                          c))))
+     ;(->Entity id (assoc (:comps this) (class c) c))))
   (dissoc-comp [this ctype]
       (->Entity (get-ent-id this) (dissoc (:comps this) ctype))))
 

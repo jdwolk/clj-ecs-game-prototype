@@ -1,22 +1,13 @@
-(ns ecs-test.systems.rendering)
+(ns ecs-test.systems.rendering
+  (:use (ecs-test.utils.assetmgr)
+        (ecs-test.core)))
 
-(comment
-  (:use ecs-test.core
-        ecs-test.components)
-  (:import ecs_test.components.Visual
-           [javax.swing ImageIcon])
+(def img-map (load-images ["player_down" "player_up" "player_left" "player_right"]))
 
-; asset-loader/get-img?
-; also, use sprite sheet coodinates instead?
-(defn load-img [img-name]
-  (ImageIcon. (clojure.java.io/resource (str "assets/sprites/" img-name ".png"))))
+(defcomponent Visual [img-name])
 
-(def img-map {:player-down (load-img "player-down")})
+(defn lookup-img [vis & {images :img-map :or {images img-map}}]
+  " Visual -> asset-content (i.e. ImageIcon)
+    Looks up Visual component image in img-map (default to one above)"
+  (asset-content ((:img-name vis) images)))
 
-
-(defn get-img [img] (img img-map))
-
-(defn paint-entity [ent]
-  (let [vis-comp "hi"]
-  (get-img (img vis-comp))))
-)
