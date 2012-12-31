@@ -3,18 +3,17 @@
            [java.io File]
            [java.net URI]))
 
+(comment
 (defn normpath [path]
-  (-> (File. path)
-      .getAbsolutePath
-      URI.
+  (->  (URI. path)
       .normalize
       .getPath))
 
 (defn pathjoin [& paths]
     (normpath (apply str (interpose File/separator paths))))
 
-(def ASSET_BASE (pathjoin *file* ".." ".." ".." "assets"))
-(def SPRITES_DIR (pathjoin ASSET_BASE "sprites"))
+(def SPRITES_DIR (pathjoin "assets" "sprites"))
+)
 
 (defprotocol Asset
   (asset-name [this]) ; :keyword representing the asset
@@ -24,17 +23,15 @@
 (defn safe-load-img [imgpath]
   "Loads a standard images (notfound.png) if 
    the image at imgpath is not found" 
+  (println "Trying to load " imgpath)
   (try
-    ;(ImageIcon. (clojure.java.io/resource imgpath))
-    (ImageIcon. imgpath)
+    (ImageIcon. (clojure.java.io/resource imgpath))
   (catch NullPointerException npe
-    ;(ImageIcon. (clojure.java.io/resource 
-    ;              (pathjoin SPRITES_DIR "notfound.png"))))))
-    (ImageIcon. (pathjoin SPRITES_DIR "notfound.png")))))
+    (ImageIcon. (clojure.java.io/resource "notfound.png")))))
 
 (defn load-img [name]
   ;TODO perform dir walk to find file
-  (let [path-to-asset (pathjoin SPRITES_DIR (str name ".png"))
+  (let [path-to-asset (str name ".png")
         content (safe-load-img path-to-asset)]
     (println "Asset: " path-to-asset)
     (reify Asset
@@ -43,5 +40,5 @@
       (asset-content [this] content))))
 
 (defn load-images [names]
-  (zipmap names (map load-img names)))
+  (zipmap (map keyword names) (map load-img names)))
 

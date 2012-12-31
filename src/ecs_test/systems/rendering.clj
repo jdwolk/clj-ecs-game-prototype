@@ -2,20 +2,15 @@
   (:require [ecs-test.core :refer [defcomponent make-comp assoc-entity-id get-ent-id]]
             [ecs-test.utils.assetmgr :refer [load-images asset-content]]))
 
-;(println "ASSET_BASE from rendering: " ASSET_BASE)
-;(println "SPRITES_DIR from rendering: " SPRITES_DIR)
-
-;(load-img "player_down")
-
 (def img-map (load-images ["player_down" "player_up" "player_left" "player_right"]))
 
 (defcomponent Visual [img-name])
 
 ;TODO better names
-(def lookup-direction-img {:N (make-comp Visual "player_up")
-                           :S (make-comp Visual "player_down")
-                           :E (make-comp Visual "player_right")
-                           :W (make-comp Visual "player_left")})
+(def lookup-direction-img {:N (make-comp Visual :player_up)
+                           :S (make-comp Visual :player_down)
+                           :E (make-comp Visual :player_right)
+                           :W (make-comp Visual :player_left)})
 
 
 ;;;;;;;;;;; Component fns ;;;;;;;;;;;;;
@@ -24,7 +19,7 @@
 ; maybe something like EntityType? or CurrentState? Something
 ; that represents not only the entity's type, but also, i.e., what
 ; weapons/aromor it has that determine the appearance
-(defn direction-img [dir vis]
+(defn direction-img [{dir :Direction vis :Visual}]
   "Direction -> Visual -> Visual
    Given Direction and Visual components, returns a new
    Visual component (ie. the asset that represents that entity

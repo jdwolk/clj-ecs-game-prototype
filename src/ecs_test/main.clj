@@ -9,10 +9,11 @@
            (ecs-test.systems.movement.Position)
            (ecs-test.systems.movement.Direction)
            (ecs-test.systems.movement.Velocity)
+           [javax.swing ImageIcon] ;XXX remove?
            [java.awt.event KeyEvent]))
 
 (def first-entity 
-  (ref (make-entity (make-comp Position 0 0 0)
+  (ref (make-entity (make-comp Position 10 300 0)
                     (make-comp Direction :S)
                     (make-comp Velocity 0)
                     (make-comp Visual "player_down"))))
@@ -21,38 +22,27 @@
   (dosync
     (let [an-ent (alter first-entity
                          (fn [e] (assoc-comp e (apply-compfn delta-loc e))))
-          _ (println "an ent: " an-ent)
           new-ent (alter first-entity
                          (fn [e] (assoc-comp e (apply-compfn direction-img e))))
-          new-pos (get-comp first-entity :Position)
-          new-vis (get-comp first-entity :Visual)
+          new-pos (get-comp @first-entity :Position)
+          new-vis (get-comp @first-entity :Visual)
           new-img (lookup-img new-vis)]
-    (println "new img"  new-img)
+    ;(println "new img"  new-img)
+    ;(println "new pos"  new-pos)
     (push g
-      (draw g (image-shape (:x new-pos) (:y new-pos) (:img new-img))
+      (draw g (image-shape (:x new-pos) (:y new-pos) new-img)
               (style :background (color 224 0 0 128)))))))
-
+      
 ;TODO carryover fns from initial prototype
 (defn key-dispatch [e]
   (dosync
-  (alter first-entity assoc-comp (make-comp Velocity 1))
+  (alter first-entity assoc-comp (make-comp Velocity 5))
   (case (KeyEvent/getKeyText (.getKeyCode e))
     "Down" (alter first-entity assoc-comp (make-comp Direction :S))
     "Up"   (alter first-entity assoc-comp (make-comp Direction :N))
     "Left" (alter first-entity assoc-comp (make-comp Direction :W))
     "Right" (alter first-entity assoc-comp (make-comp Direction :E))
     :else  (println "SOMETHING was pressed"))))
-
-(comment
-  (dosync
-    (case (KeyEvent/getKeyText (.getKeyCode e))
-    "Down" (println "Down") 
-    "Up"   (println "Up") 
-    "Left" (println "Left") 
-    "Right" (println "Right") 
-    :else  (println "SOMETHING was pressed")))
-)
-
 
 (defn zero-velocity [e]
   (dosync
@@ -80,7 +70,7 @@
               :key-released zero-velocity)
     (-> f pack! show!)))
 
-;(setup-frame)
+(setup-frame)
 
 ; Taken from Rich Hickey's ants demo
 (comment

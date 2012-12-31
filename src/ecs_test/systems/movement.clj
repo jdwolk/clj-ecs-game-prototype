@@ -8,9 +8,9 @@
 (defcomponent Velocity [units])  ; units per ...milli?
 
 ;Translates symbolic representation of dirs to numeric
-(def dir-translate {:N 0
+(def dir-translate {:N 2
                     :E 1
-                    :S 2
+                    :S 0
                     :W 3})
 
 ; Shameless ripoff of Rich Hickey's ants demo
@@ -27,7 +27,7 @@
 ;;;;;;;;;;;;; Component Fns ;;;;;;;;;;;;;;
 
 ;(defn delta-loc [{pos :Position dir :Direction}]
-(defn delta-loc [pos vel dir]
+(defn delta-loc [{pos :Position, vel :Velocity, dir :Direction}]
   "Position -> Velocity -> Direction -> Position
    Given an entity's Position Velcoty and a Direction, 
    returns a new Position n increments in the given Direction
@@ -37,7 +37,7 @@
                                     (:units vel)
                                     (:dir dir))]
     (assoc-entity-id 
-      (:id pos)
+      (:entity-id pos)
       (make-comp Position newx newy (:z pos)))))
 
 

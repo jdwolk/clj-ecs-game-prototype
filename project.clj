@@ -5,6 +5,8 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :local-repo "lib"
   :profiles {:dev {:plugins [[lein-midje "2.0.0-SNAPSHOT"]]}}
+  :resource-paths ["assets"
+                   "assets/sprites"]
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [seesaw "1.4.2"]
                  [midje "1.4.0"]
