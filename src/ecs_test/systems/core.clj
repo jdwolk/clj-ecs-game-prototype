@@ -13,11 +13,11 @@
   (fn [entity]
     (reduce #(or % %2) (map #(% entity) aspectfns))))
 
-(defn apply-compfn [compfn & ents]
-  "Should use for calling all compfns on entities
-   (compfn might take one or more entities)"
-  ;(println (str "ENTS: " ents))
-  (apply compfn (map get-comps ents)))
+(defn apply-compfn [compfn ent]
+  "Should use for calling all compfns on entities"
+  ;delta-loc [pos dir]
+  ;(apply compfn (map get-comps ents)))
+  (compfn (get-comps ent)))
 
 (defn apply-if [aspectfn compfn & ents]
   "Applies a Component fn to one or more entities if they all meet aspect-fn"

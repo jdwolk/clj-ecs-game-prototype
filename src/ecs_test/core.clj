@@ -44,7 +44,7 @@
   (get-comps [this] (:comps this))
   (assoc-comp [this partial-comp] 
     "Use for adding or updating comps"
-    (println "Partial comp: " partial-comp)
+    ;(println "Partial comp: " partial-comp)
     (let [id (get-ent-id this)
           c (if (not (coll? partial-comp)) ; Skip fully-realized comps
                 (assoc-entity-id id partial-comp)
