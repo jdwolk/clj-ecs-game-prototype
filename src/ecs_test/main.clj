@@ -1,30 +1,99 @@
 (ns ecs-test.main
   (:use (ecs-test core)
-        (ecs-test.systems rendering position))
-  (:import '(ecs-test.systems.rendering.Visual)
-           '(ecs-test.systems.movement Position Direction)))
+        (ecs-test.systems rendering movement core)
+        [seesaw.core]
+        [seesaw.graphics]
+        [seesaw.color]
+        [seesaw.applet])
+  (:import (ecs-test.systems.rendering.Visual)
+           (ecs-test.systems.movement.Position)
+           (ecs-test.systems.movement.Direction)
+           (ecs-test.systems.movement.Velocity)
+           [java.awt.event KeyEvent]))
 
-(def entities (atom
-      { (make-entity (make-comp Position 0 0 0)
-                     (make-comp Direction :S
-                     (make-comp Visual "player_down"))) }))
+(def first-entity 
+  (ref (make-entity (make-comp Position 0 0 0)
+                     (make-comp Direction :S)
+                     (make-comp Velocity 0)
+                     (make-comp Visual "player_down"))))
 
 (defn paint-world [c g]
+  (println "Painting world")
   (dosync
-    ; apply relevant compfns to all entities
-    ))
+    (let [an-ent (alter first-entity
+                         (fn [e] (assoc-comp e (apply-compfn delta-loc e))))
+          new-ent (alter first-entity
+                         (fn [e] (assoc-comp e (apply-compfn position-img e))))
+          new-pos (get-comp first-entity :Position)
+          new-vis (get-comp first-entity :Visual)
+          new-img (lookup-img new-vis)]
+    (println "image: " new-img)
+    (push g
+      (draw g (image-shape (:x new-pos) (:y new-pos) (:img new-img))
+              (style :background (color 224 0 0 128)))))))
 
-(defn start-game []
-  (let [screen (canvas
-                 :id :gamescreen
-                 :paint paint-world
-                 :size [350 :by 350])
-        t      (timer (fn [e] (repaint! screen)) :delay 60)
-        f      (frame :title "My Game"
-                      :size [350 :by 350]
-                      :content screen)]
+;TODO carryover fns from initial prototype
+(defn key-dispatch [e]
+  (println "Key pressed")
+  (dosync
+    (case (KeyEvent/getKeyText (.getKeyCode e))
+    "Down" (println "Down") 
+    "Up"   (println "Up") 
+    "Left" (println "Left") 
+    "Right" (println "Right") 
+    :else  (println "SOMETHING was pressed"))))
+
+(comment
+  (case (KeyEvent/getKeyText (.getKeyCode e))
+    "Down" (alter first-entity assoc-comp (make-comp Direction :S))
+    "Up"   (alter first-entity assoc-comp (make-comp Direction :N))
+    "Left" (alter first-entity assoc-comp (make-comp Direction :W))
+    "Right" (alter first-entity assoc-comp (make-comp Direction :E))
+    :else  (println "SOMETHING was pressed"))
+)
+
+(defn zero-velocity [e]
+  (dosync
+    (alter first-entity assoc-comp (make-comp Velocity 0))))
+
+; Thread-local (i.e. tied to Swing thread)
+(comment
+(def screen (canvas :id :gamescreen
+                    :paint paint-world
+                    :size [350 :by 350]))
+)
+
+(defn setup-frame []
+  (println "Setting up frame!")
+  (let [screen (canvas 
+                    :id :gamescreen
+                    :paint paint-world
+                    :size [350 :by 350])
+        t (timer (fn [e] (repaint! screen)) :delay 60)
+        f (frame :title "My Game"
+                 :size [350 :by 350]
+                 :content screen)]
     (native!)
     (listen f :key-pressed  key-dispatch
-              :key-released something)
+              :key-released zero-velocity)
     (-> f pack! show!)))
+
+(setup-frame)
+
+; Taken from Rich Hickey's ants demo
+(comment
+(def animator (agent nil))
+(def animation-sleep-ms 100)
+
+(defn animation [x]
+  (when running
+    (send-off *agent* #'animation))
+  (. screen (repaint))
+  (. Thread (sleep animation-sleep-ms))
+  nil)
+
+(defn game-loop []
+  (setup-frame)
+  (send-off animator animation))
+)
 

@@ -5,6 +5,7 @@
 ;(import '(ecs-test.systems.movement.Position))
 (defcomponent Position [x y z])  ; z is height above 'ground level'
 (defcomponent Direction [dir])
+(defcomponent Velocity [units])  ; units per ...milli?
 
 ;Translates symbolic representation of dirs to numeric
 (def dir-translate {:N 0
