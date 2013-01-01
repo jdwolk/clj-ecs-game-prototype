@@ -4,13 +4,17 @@
         [seesaw.core]
         [seesaw.graphics]
         [seesaw.color]
-        [seesaw.applet])
+        [seesaw applet])
   (:import (ecs-test.systems.rendering.Visual)
            (ecs-test.systems.movement.Position)
            (ecs-test.systems.movement.Direction)
            (ecs-test.systems.movement.Velocity)
-           [javax.swing ImageIcon] ;XXX remove?
-           [java.awt.event KeyEvent]))
+           [java.awt.event KeyEvent]
+           [javax.swing JPanel JApplet]         ; for type hinting
+           [sun.java2d SunGraphics2D]) ; for type hinting
+  (:gen-class))
+
+(set! *warn-on-reflection* true)
 
 (def first-entity 
   (ref (make-entity (make-comp Position 10 300 0)
@@ -18,7 +22,7 @@
                     (make-comp Velocity 0)
                     (make-comp Visual "player_down"))))
 
-(defn paint-world [c g]
+(defn paint-world [#^javax.swing.JPanel c #^SunGraphics2D g]
   (dosync
     (let [an-ent (alter first-entity
                          (fn [e] (assoc-comp e (apply-compfn delta-loc e))))
@@ -34,7 +38,7 @@
               (style :background (color 224 0 0 128)))))))
       
 ;TODO carryover fns from initial prototype
-(defn key-dispatch [e]
+(defn key-dispatch [#^KeyEvent e]
   (dosync
   (alter first-entity assoc-comp (make-comp Velocity 5))
   (case (KeyEvent/getKeyText (.getKeyCode e))
@@ -64,28 +68,28 @@
         t (timer (fn [e] (repaint! screen)) :delay 60)
         f (frame :title "My Game"
                  :size [350 :by 350]
-                 :content screen)]
+                 :content screen
+                 :on-close :dispose)]
     (native!)
     (listen f :key-pressed  key-dispatch
               :key-released zero-velocity)
     (-> f pack! show!)))
 
-(setup-frame)
+;(setup-frame)
 
-; Taken from Rich Hickey's ants demo
-(comment
-(def animator (agent nil))
-(def animation-sleep-ms 100)
+(defn setup-applet [applet]
+  (println "Applet class: " (class applet))
+  (let [screen (canvas 
+                    :id :gamescreen
+                    :paint paint-world
+                    :size [350 :by 350])
+        t (timer (fn [e] (repaint! screen)) :delay 60)
+        p (border-panel :north "This is an awesome demo"
+                             :center screen)]
+    (listen p :key-pressed  key-dispatch
+              :key-released zero-velocity)))
 
-(defn animation [x]
-  (when running
-    (send-off *agent* #'animation))
-  (. screen (repaint))
-  (. Thread (sleep animation-sleep-ms))
-  nil)
+(defapplet :content setup-applet)
 
-(defn game-loop []
-  (setup-frame)
-  (send-off animator animation))
-)
-
+(defn -main [& args]
+  (setup-frame))

@@ -7,8 +7,14 @@
   :profiles {:dev {:plugins [[lein-midje "2.0.0-SNAPSHOT"]]}}
   :resource-paths ["assets"
                    "assets/sprites"]
+  :aot [ecs-test.main]
+  :main ecs-test.main
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [seesaw "1.4.2"]
                  [midje "1.4.0"]
                  [com.stuartsierra/lazytest "1.2.3"]]
   :repositories {"stuart" "http://stuartsierra.com/maven2"})
+
+
+;:warn-on-reflection true
+
