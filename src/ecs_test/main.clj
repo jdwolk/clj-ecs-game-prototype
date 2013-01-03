@@ -3,16 +3,18 @@
         (ecs-test.systems rendering movement core)
         [seesaw.core]
         [seesaw.graphics]
-        [seesaw.color]
-        [seesaw applet])
+        [seesaw.color])
   (:import (ecs-test.systems.rendering.Visual)
            (ecs-test.systems.movement.Position)
            (ecs-test.systems.movement.Direction)
            (ecs-test.systems.movement.Velocity)
            [java.awt.event KeyEvent]
-           [javax.swing JPanel JApplet]         ; for type hinting
+           [javax.swing JPanel]        ; for type hinting
            [sun.java2d SunGraphics2D]) ; for type hinting
-  (:gen-class))
+  (:gen-class
+    :main main))
+    ;:post-init post-init 
+    ;:extends javax.swing.JApplet))
 
 (set! *warn-on-reflection* true)
 
@@ -22,7 +24,7 @@
                     (make-comp Velocity 0)
                     (make-comp Visual "player_down"))))
 
-(defn paint-world [#^javax.swing.JPanel c #^SunGraphics2D g]
+(defn paint-world [#^JPanel c #^SunGraphics2D g]
   (dosync
     (let [an-ent (alter first-entity
                          (fn [e] (assoc-comp e (apply-compfn delta-loc e))))
@@ -31,8 +33,6 @@
           new-pos (get-comp @first-entity :Position)
           new-vis (get-comp @first-entity :Visual)
           new-img (lookup-img new-vis)]
-    ;(println "new img"  new-img)
-    ;(println "new pos"  new-pos)
     (push g
       (draw g (image-shape (:x new-pos) (:y new-pos) new-img)
               (style :background (color 224 0 0 128)))))))
@@ -52,20 +52,13 @@
   (dosync
     (alter first-entity assoc-comp (make-comp Velocity 0))))
 
-; Thread-local (i.e. tied to Swing thread)
-(comment
 (def screen (canvas :id :gamescreen
                     :paint paint-world
                     :size [350 :by 350]))
-)
 
-(defn setup-frame []
+(defn setup-frame [screen]
   (println "Setting up frame!")
-  (let [screen (canvas 
-                    :id :gamescreen
-                    :paint paint-world
-                    :size [350 :by 350])
-        t (timer (fn [e] (repaint! screen)) :delay 60)
+  (let [t (timer (fn [e] (repaint! screen)) :delay 60)
         f (frame :title "My Game"
                  :size [350 :by 350]
                  :content screen
@@ -75,21 +68,27 @@
               :key-released zero-velocity)
     (-> f pack! show!)))
 
-;(setup-frame)
+(defn -main []
+  (println "in -main")
+  (setup-frame screen))
 
-(defn setup-applet [applet]
-  (println "Applet class: " (class applet))
-  (let [screen (canvas 
-                    :id :gamescreen
-                    :paint paint-world
-                    :size [350 :by 350])
-        t (timer (fn [e] (repaint! screen)) :delay 60)
-        p (border-panel :north "This is an awesome demo"
-                             :center screen)]
+(comment
+(defn setup-panel [#^JPanel screen]
+  (let [t (timer (fn [e] (repaint! screen)) :delay 60)
+        p (border-panel :center screen
+                        :focusable? true)]
     (listen p :key-pressed  key-dispatch
-              :key-released zero-velocity)))
+              :key-released zero-velocity)
+    p))
 
-(defapplet :content setup-applet)
+(defn -post-init [#^ecs_test.main this]
+  (println "In -post-init")
+  (let [panel (setup-panel screen)]
+    (.setContentPane this panel)
+    ))
 
-(defn -main [& args]
-  (setup-frame))
+(defapplet :content (setup-panel screen)
+           :init (fn [_] (println "Initialized"))
+           :start (fn [_] (println "Started")))
+)
+

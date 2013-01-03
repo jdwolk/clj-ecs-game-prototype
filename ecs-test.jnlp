@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jnlp spec="1.0+"
+      codebase="file://localhost/home/jordaniel/Code/clojure/games/ecs-test/"
+      href="ecs-test.jnlp">
+  <information>
+    <title>Blah</title>
+    <vendor>icyrock.com</vendor>
+    <offline-allowed/>
+  </information>
+  <security>
+      <all-permissions/>
+  </security>
+  <resources>
+    <j2se version="1.6.0+"/>
+    <jar href="ecs-test.jar"/>
+  </resources>
+  <application-desc main-class="ecs_test.main"/>
+</jnlp>  
