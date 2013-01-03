@@ -13,8 +13,6 @@
            [sun.java2d SunGraphics2D]) ; for type hinting
   (:gen-class
     :main main))
-    ;:post-init post-init 
-    ;:extends javax.swing.JApplet))
 
 (set! *warn-on-reflection* true)
 
@@ -71,24 +69,4 @@
 (defn -main []
   (println "in -main")
   (setup-frame screen))
-
-(comment
-(defn setup-panel [#^JPanel screen]
-  (let [t (timer (fn [e] (repaint! screen)) :delay 60)
-        p (border-panel :center screen
-                        :focusable? true)]
-    (listen p :key-pressed  key-dispatch
-              :key-released zero-velocity)
-    p))
-
-(defn -post-init [#^ecs_test.main this]
-  (println "In -post-init")
-  (let [panel (setup-panel screen)]
-    (.setContentPane this panel)
-    ))
-
-(defapplet :content (setup-panel screen)
-           :init (fn [_] (println "Initialized"))
-           :start (fn [_] (println "Started")))
-)
 
