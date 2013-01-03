@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <jnlp spec="1.0+"
-      codebase="file://localhost/home/jordaniel/Code/clojure/games/ecs-test/"
+      codebase="http://www.coppercompassgames.com/game/"
       href="ecs-test.jnlp">
   <information>
-    <title>Blah</title>
-    <vendor>icyrock.com</vendor>
+    <title>The Game</title>
+    <vendor>Copper Compass Games</vendor>
     <offline-allowed/>
   </information>
   <security>
