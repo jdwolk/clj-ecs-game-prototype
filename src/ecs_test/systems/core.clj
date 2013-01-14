@@ -15,9 +15,9 @@
 
 (defn apply-compfn [compfn ent]
   "Should use for calling all compfns on entities"
-  ;delta-loc [pos dir]
-  ;(apply compfn (map get-comps ents)))
-  (compfn (get-comps ent)))
+  ;(compfn (get-comps ent)))
+  ;(println "FN: " compfn)
+  (compfn (:comps ent)))
 
 (defn apply-if [aspectfn compfn & ents]
   "Applies a Component fn to one or more entities if they all meet aspect-fn"

@@ -22,7 +22,7 @@
                     (make-comp Visual :player_down))))
 
 (def npc-entity
-  (ref (make-entity (make-comp Position 10 10 0)
+  (ref (make-entity (make-comp Position 200 200 0)
                     (make-comp Direction :E)
                     (make-comp Velocity 0)
                     (make-comp Visual :player_right))))
@@ -30,31 +30,35 @@
 
 (defn paint-world [#^JPanel c #^SunGraphics2D g]
   (dosync
+    (if (= (rand-int 15) 0) ; should move?
+      (let [{npc-pos :Position npc-vis :Visual} 
+            (apply-compfn something @npc-entity)]
+        (alter npc-entity (fn [e] (assoc-comp e npc-pos)))
+        (alter npc-entity (fn [e] (assoc-comp e npc-vis)))))
+    
     (let [an-ent (alter first-entity
                          (fn [e] (assoc-comp e (apply-compfn delta-loc e))))
           new-ent (alter first-entity
                          (fn [e] (assoc-comp e (apply-compfn direction-img e))))
           new-pos (get-comp @first-entity :Position)
           new-vis (get-comp @first-entity :Visual)
-          new-img (lookup-img new-vis)]
+          new-img (lookup-img new-vis)
+          npc-pos (get-comp @npc-entity :Position)
+          npc-vis (get-comp @npc-entity :Visual)]
     (push g
       (draw g (image-shape (:x new-pos) (:y new-pos) new-img)
               (style :background (color 224 0 0 128)))
-      (draw g (image-shape (:x (get-comp @npc-entity :Position))
-                           (:y (get-comp @npc-entity :Position))
-                           (lookup-img (get-comp @npc-entity :Visual)))
+      (draw g (image-shape (:x npc-pos) (:y npc-pos) (lookup-img npc-vis))
               (style :background (color 224 0 0 128)))))))
 
-;{npc-pos :Position npc-vis :Visual} (apply-compfn something @npc-entity)
+      ;(draw g (image-shape (:x (get-comp @npc-entity :Position))
+      ;                     (:y (get-comp @npc-entity :Position))
+      ;                     (lookup-img (get-comp @npc-entity :Visual)))
+      ;        (style :background (color 224 0 0 128)))))))
+
+
 ;(draw g (circle 150 150 30)
 ;        (style :background (color 110 10 10))))))
-;(alter npc-entity assoc-comp :Position npc-pos)
-;(alter npc-entity assoc-comp :Visual npc-vis)
-
-;(draw g (image-shape (:x npc-pos)
-;                     (:y npc-pos)
-;                     (lookup-img npc-vis))
-;        (style :background (color 224 0 0 128)))))))
      
      
 ;TODO carryover fns from initial prototype
