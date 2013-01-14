@@ -19,6 +19,7 @@
 ; maybe something like EntityType? or CurrentState? Something
 ; that represents not only the entity's type, but also, i.e., what
 ; weapons/aromor it has that determine the appearance
+;XXX is :Visual comp even needed???
 (defn direction-img [{dir :Direction vis :Visual}]
   "Direction -> Visual -> Visual
    Given Direction and Visual components, returns a new
@@ -31,5 +32,5 @@
 (defn lookup-img [vis & {images :img-map :or {images img-map}}]
   " Visual -> asset-content (i.e. ImageIcon)
     Looks up Visual component image in img-map (default to one above)"
-  (asset-content ((:img-name vis) images)))
+  (asset-content ((keyword (:img-name vis)) images)))
 

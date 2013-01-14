@@ -1,16 +1,15 @@
 (ns ecs-test.main
   (:use (ecs-test core)
-        (ecs-test.systems rendering movement core)
-        [seesaw.core]
-        [seesaw.graphics]
-        [seesaw.color])
+        (ecs-test.systems rendering movement core ai)
+        (seesaw core graphics color))
   (:import (ecs-test.systems.rendering.Visual)
            (ecs-test.systems.movement.Position)
            (ecs-test.systems.movement.Direction)
            (ecs-test.systems.movement.Velocity)
-           [java.awt.event KeyEvent]
-           [javax.swing JPanel]        ; for type hinting
-           [sun.java2d SunGraphics2D]) ; for type hinting
+           (ecs-test.systems.ai.Behavior)
+           (java.awt.event KeyEvent)
+           (javax.swing JPanel)        ; for type hinting
+           (sun.java2d SunGraphics2D)) ; for type hinting
   (:gen-class
     :main main))
 
@@ -20,7 +19,14 @@
   (ref (make-entity (make-comp Position 10 300 0)
                     (make-comp Direction :S)
                     (make-comp Velocity 0)
-                    (make-comp Visual "player_down"))))
+                    (make-comp Visual :player_down))))
+
+(def npc-entity
+  (ref (make-entity (make-comp Position 10 10 0)
+                    (make-comp Direction :E)
+                    (make-comp Velocity 0)
+                    (make-comp Visual :player_right))))
+                    ;(make-comp Behavior :random-walking))))
 
 (defn paint-world [#^JPanel c #^SunGraphics2D g]
   (dosync
@@ -33,8 +39,24 @@
           new-img (lookup-img new-vis)]
     (push g
       (draw g (image-shape (:x new-pos) (:y new-pos) new-img)
+              (style :background (color 224 0 0 128)))
+      (draw g (image-shape (:x (get-comp @npc-entity :Position))
+                           (:y (get-comp @npc-entity :Position))
+                           (lookup-img (get-comp @npc-entity :Visual)))
               (style :background (color 224 0 0 128)))))))
-      
+
+;{npc-pos :Position npc-vis :Visual} (apply-compfn something @npc-entity)
+;(draw g (circle 150 150 30)
+;        (style :background (color 110 10 10))))))
+;(alter npc-entity assoc-comp :Position npc-pos)
+;(alter npc-entity assoc-comp :Visual npc-vis)
+
+;(draw g (image-shape (:x npc-pos)
+;                     (:y npc-pos)
+;                     (lookup-img npc-vis))
+;        (style :background (color 224 0 0 128)))))))
+     
+     
 ;TODO carryover fns from initial prototype
 (defn key-dispatch [#^KeyEvent e]
   (dosync
@@ -46,9 +68,9 @@
     "Right" (alter first-entity assoc-comp (make-comp Direction :E))
     :else  (println "SOMETHING was pressed"))))
 
-(defn zero-velocity [e]
+(defn key-up [#^KeyEvent e]
   (dosync
-    (alter first-entity assoc-comp (make-comp Velocity 0))))
+    (alter first-entity assoc-comp (zero-velocity))))
 
 (def screen (canvas :id :gamescreen
                     :paint paint-world
@@ -63,7 +85,7 @@
                  :on-close :dispose)]
     (native!)
     (listen f :key-pressed  key-dispatch
-              :key-released zero-velocity)
+              :key-released key-up)
     (-> f pack! show!)))
 
 (defn -main []

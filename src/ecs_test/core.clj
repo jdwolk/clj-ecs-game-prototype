@@ -1,8 +1,6 @@
 (ns ecs-test.core
-  (:use (ecs-test unique)))
-
-(defn splitlast [a-str regex]
-  (last (clojure.string/split a-str regex)))
+  (:require [ecs-test.utils.misc :refer [splitlast class->keyword
+                                         generate-id]]))
 
 ;; Components
 
@@ -28,38 +26,34 @@
 
 ;; Entities
 
-(defrecord Entity [id comps])
 (defprotocol IEntity
   (get-ent-id [this]) ; TODO factor out into Unique protocol
   (get-comp [this ctype])
   (get-comps [this])   ; a map of {CompName comp}
-  (assoc-comp [this comp])
+  (assoc-comp [this partial-comp])
   (dissoc-comp [this ctype]))
 
-(extend-type Entity
+(defrecord Entity [id comps]
   IEntity
   (get-ent-id [this] (:id this))
   (get-comp [this ctype] ((:comps this) ctype))
-  ;(get-comps [this] (vals (:comps this)))
   (get-comps [this] (:comps this))
   (assoc-comp [this partial-comp] 
     "Use for adding or updating comps"
-    ;(println "Partial comp: " partial-comp)
     (let [id (get-ent-id this)
           c (if (not (coll? partial-comp)) ; Skip fully-realized comps
                 (assoc-entity-id id partial-comp)
                 partial-comp)]
       (->Entity id (assoc (:comps this) 
-                          (keyword (splitlast (str (class c)) #"\."))
+                          (class->keyword (class c))
                           c))))
-     ;(->Entity id (assoc (:comps this) (class c) c))))
   (dissoc-comp [this ctype]
       (->Entity (get-ent-id this) (dissoc (:comps this) ctype))))
 
 (defn make-entity [& comps]
-  (reduce #(assoc-comp % %2)
-           (->Entity (generate-id) {})  ; initial value
-           comps))
+  (reduce assoc-comp
+          (->Entity (generate-id) {})  ; initial value
+          comps))
 
 
 (comment

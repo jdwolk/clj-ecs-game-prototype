@@ -1,5 +1,5 @@
 (ns ecs-test.test.core
-  (:use (ecs-test unique core)
+  (:use (ecs-test core)
         (midje sweet)))
 
 (comment

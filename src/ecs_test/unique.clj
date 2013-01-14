@@ -1,6 +1,7 @@
-(ns ecs-test.unique)
+(ns ecs-test.unique
+  (:require [ecs-test.utils.misc :refer [generate-id]]))
 
-(defn generate-id [] (str (java.util.UUID/randomUUID)))
+;(defn generate-id [] (str (java.util.UUID/randomUUID)))
 
 (defprotocol Unique
   (get-id [self]))
