@@ -17,8 +17,7 @@
 
 (set! *warn-on-reflection* true)
 
-; Will be initialized in -main
-(def ^:dynamic *CONFIG*)
+(def ^:dynamic *CONFIG*) ; initialized in -main
 
 ;TODO move this somewhere else!!!
 ;XXX THIS IS HORRID TEST CODE
@@ -28,9 +27,7 @@
 ; its a horrible hack
 (defn assoc-npc-in-pool [npc]
   (if npc
-    (do
-      ;(println "***** Associating NPC " (get-ent-id npc))
-      (alter npcs assoc (get-ent-id npc) npc))))
+    (alter npcs assoc (get-ent-id npc) npc)))
 
 
 (defn make-body [x y dir & {vis :visual :or
@@ -56,16 +53,13 @@
                     (make-comp Velocity 0)
                     (make-comp Visual :player_down))))
 
+;TODO move somewhere else
 (defn draw-entity [#^SunGraphics2D g ent]
   (let [pos (get-comp ent :Position)
         img (lookup-img (get-comp ent :Visual))]
-    ;(println "Drawing " (get-ent-id ent))
-    ;(println "Position: " pos)
-    ;(println "Vis: " img "\n\n")
     (draw g (image-shape (:x pos) (:y pos) img)
           (style :background (color 224 0 0 128)))))
 
-;TODO find somewhere else for this
 (defn draw-text [#^SunGraphics2D g words x y s]
                  ;& {s :size x :x y :y 
                  ;:or {s 24 x 20 y 20}}]
@@ -76,23 +70,14 @@
      
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;XXX horrible, horrible. I'm going to hell.
-(defn randomly-move [npc]
-  ;(println "Moving NPC " (get-ent-id npc))
-  ;(if (= (rand-int 15) 0) ; should move?
-      (let [{npc-pos :Position npc-vis :Visual}
-            (apply-compfn move-toward-player @player-entity npc)]
-            ;(apply-compfn make-rand-move npc)]
-      (assoc-comp (assoc-comp npc npc-pos) npc-vis)))
-
 (def move-agent (agent nil))
 
 (defn mover [x]
   (send-off *agent* #'mover)
   (doseq [npc (vals @npcs)] 
-    (let [moved-npc (randomly-move npc)]
-      ;(println "NPC " (get-ent-id npc) " moved")
-      ;(println "NPC " (get-ent-id npc) " pos: " (get-comp :Position npc) "\n")
+   ;(let [moved-npc (apply assoc-comps npc (vals (random-movement npc 15)))]
+    (let [new-comps (apply-compfn move-toward-player @player-entity npc)
+          moved-npc (apply assoc-comps npc (vals new-comps))]
       (dosync
         (assoc-npc-in-pool moved-npc))))
   (. Thread (sleep 100)))
@@ -110,9 +95,9 @@
   (dosync
     (let [start-time (System/nanoTime)
           an-ent (alter player-entity
-                         (fn [e] (assoc-comp e (apply-compfn delta-loc e))))
+                         (fn [e] (assoc-comps e (apply-compfn delta-loc e))))
           new-ent (alter player-entity
-                         (fn [e] (assoc-comp e (apply-compfn direction-img e))))
+                         (fn [e] (assoc-comps e (apply-compfn direction-img e))))
           all-ents (cons new-ent (vals @npcs))]
         (doseq [e all-ents]
           (push g
@@ -127,17 +112,17 @@
 ;TODO carryover fns from initial prototype
 (defn key-dispatch [#^KeyEvent e]
   (dosync
-  (alter player-entity assoc-comp (make-comp Velocity 5))
+  (alter player-entity assoc-comps (make-comp Velocity 5))
   (case (KeyEvent/getKeyText (.getKeyCode e))
-    "Down" (alter player-entity assoc-comp (make-comp Direction :S))
-    "Up"   (alter player-entity assoc-comp (make-comp Direction :N))
-    "Left" (alter player-entity assoc-comp (make-comp Direction :W))
-    "Right" (alter player-entity assoc-comp (make-comp Direction :E))
+    "Down" (alter player-entity assoc-comps (make-comp Direction :S))
+    "Up"   (alter player-entity assoc-comps (make-comp Direction :N))
+    "Left" (alter player-entity assoc-comps (make-comp Direction :W))
+    "Right" (alter player-entity assoc-comps (make-comp Direction :E))
     :else  (println "SOMETHING was pressed"))))
 
 (defn key-up [#^KeyEvent e]
   (dosync
-    (alter player-entity assoc-comp (zero-velocity))))
+    (alter player-entity assoc-comps (zero-velocity))))
 
 (defn setup-frame []
   (println "Setting up frame!")

@@ -57,4 +57,11 @@
                                          {:Direction new-dir
                                           :Visual vis}})}))
 
+(defn random-movement [ent one-in-x]
+  "Entity -> int -> {Component}"
+  (if (= (rand-int one-in-x) 0)  ; should move?
+      (apply-compfn make-rand-move ent)
+      ; (apply-compfn move-toward-player @player-entity npc)
+      {})) ; otherwise nothing changes
+
 

@@ -38,8 +38,7 @@
   (get-ent-id [this] (:id this))
   (get-comp [this ctype] ((:comps this) ctype))
   (get-comps [this] (:comps this))
-  (assoc-comp [this partial-comp] 
-    "Use for adding or updating comps"
+  (assoc-comp [this partial-comp]
     (let [id (get-ent-id this)
           c (if (not (coll? partial-comp)) ; Skip fully-realized comps
                 (assoc-entity-id id partial-comp)
@@ -50,8 +49,13 @@
   (dissoc-comp [this ctype]
       (->Entity (get-ent-id this) (dissoc (:comps this) ctype))))
 
+;TODO protocols can't take variadic args
+; so I have to do this here
+(defn assoc-comps [ent & partial-comps]
+  (reduce #(assoc-comp % %2) ent partial-comps))
+
 (defn make-entity [& comps]
-  (reduce assoc-comp
+  (reduce assoc-comps
           (->Entity (generate-id) {})  ; initial value
           comps))
 
