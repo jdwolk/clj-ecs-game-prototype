@@ -13,11 +13,10 @@
   (fn [entity]
     (reduce #(or % %2) (map #(% entity) aspectfns))))
 
-(defn apply-compfn [compfn ent]
+(defn apply-compfn [compfn & ents]
   "Should use for calling all compfns on entities"
-  ;(compfn (get-comps ent)))
-  ;(println "FN: " compfn)
-  (compfn (:comps ent)))
+  ;(compfn (:comps ent)))
+  (apply compfn (map :comps ents)))
 
 (defn apply-if [aspectfn compfn & ents]
   "Applies a Component fn to one or more entities if they all meet aspect-fn"
