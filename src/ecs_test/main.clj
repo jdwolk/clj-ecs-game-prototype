@@ -9,9 +9,8 @@
            (ecs-test.systems.movement.Velocity)
            (ecs-test.systems.ai.Behavior)
            (java.awt.event KeyEvent)
-           (javax.swing JPanel)        ; for type hinting
-           (sun.java2d SunGraphics2D) ; for type hinting
-           (java.util.concurrent TimeUnit)) ;XXX move this
+           (javax.swing JPanel)       ; for type hinting
+           (sun.java2d SunGraphics2D)) ; for type hinting
   (:gen-class
     :main main))
 
@@ -28,7 +27,6 @@
 (defn assoc-npc-in-pool [npc]
   (if npc
     (alter npcs assoc (get-ent-id npc) npc)))
-
 
 (defn make-body [x y dir & {vis :visual :or
                            {vis :player_down}}]
@@ -67,7 +65,6 @@
     (draw g (string-shape x y words)
             (style :foreground (color 0 0 0)
                    :font (str "ARIAL-BOLD-" s)))))
-     
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (def move-agent (agent nil))

@@ -57,6 +57,10 @@
                                          {:Direction new-dir
                                           :Visual vis}})}))
 
+;(defn do-rand [one-in-x succ-fn & args]
+;  (if (= (rand-int one-in-x) 0)
+;      (a-fn args)
+
 (defn random-movement [ent one-in-x]
   "Entity -> int -> {Component}"
   (if (= (rand-int one-in-x) 0)  ; should move?
