@@ -15,16 +15,16 @@
 
 ; Shameless ripoff of Rich Hickey's ants demo
 ; Increases clockwise starting @ North
-(def dir-delta {0 [ 0  1]
-                1 [ 1  0]
-                2 [ 0 -1]
-                3 [-1  0]})
+(def dir-delta [[ 0  1]
+                [ 1  0]
+                [ 0 -1]
+                [-1  0]])
 
 (defn rand-dir [& {dirs :dirs :or {dirs (keys dir-translate)}}]
   (nth dirs (rand (count dirs))))
 
 (defn delta-loc-calc [x y vel dir]
-  (let [[dx dy] (map (partial * vel) (dir-delta (dir-translate dir)))]
+  (let [[dx dy] (map (partial * vel) (nth dir-delta (dir-translate dir)))]
     [(+ x dx) (+ y dy)]))
 
 ;;;;;;;;;;;;; Component Fns ;;;;;;;;;;;;;;

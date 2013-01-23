@@ -30,11 +30,11 @@
   (let [old-id (get-entity-id pos)
         new-dir (assoc-entity-id old-id (rand-direction))
         new-vel (assoc-entity-id old-id (rand-velocity 5))]
-   {:Position (apply-compfn delta-loc {:comps
+   {:Position (compfn delta-loc {:comps
                                        {:Direction new-dir
                                         :Position pos
                                         :Velocity new-vel}})
-    :Visual (apply-compfn direction-img {:comps
+    :Visual (compfn direction-img {:comps
                                          {:Direction new-dir
                                           :Visual vis}})}))
 
@@ -49,11 +49,11 @@
                   (if (< (:y curr-pos) (:y player-pos))
                       (assoc-entity-id old-id (make-comp Direction :S))
                       (assoc-entity-id old-id (make-comp Direction :N))))]
-    {:Position (apply-compfn delta-loc {:comps
+    {:Position (compfn delta-loc {:comps
                                        {:Direction new-dir
                                         :Position curr-pos
                                         :Velocity new-vel}})
-     :Visual (apply-compfn direction-img {:comps
+     :Visual (compfn direction-img {:comps
                                          {:Direction new-dir
                                           :Visual vis}})}))
 
@@ -64,8 +64,8 @@
 (defn random-movement [ent one-in-x]
   "Entity -> int -> {Component}"
   (if (= (rand-int one-in-x) 0)  ; should move?
-      (apply-compfn make-rand-move ent)
-      ; (apply-compfn move-toward-player @player-entity npc)
+      (compfn make-rand-move ent)
+      ; (compfn move-toward-player @player-entity npc)
       {})) ; otherwise nothing changes
 
 

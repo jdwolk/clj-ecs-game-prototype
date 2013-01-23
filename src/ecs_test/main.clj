@@ -2,7 +2,7 @@
   (:use (ecs-test core)
         (ecs-test.systems rendering movement core ai)
         (seesaw core graphics color))
-  (:require [ecs-test.utils.configmgr :refer [load-config]])
+  (:require [ecs-test.utils.configmgr :refer [with-config config-get load-config]])
   (:import (ecs-test.systems.rendering.Visual)
            (ecs-test.systems.movement.Position)
            (ecs-test.systems.movement.Direction)
@@ -15,8 +15,6 @@
     :main main))
 
 (set! *warn-on-reflection* true)
-
-(def ^:dynamic *CONFIG*) ; initialized in -main
 
 ;TODO move this somewhere else!!!
 ;XXX THIS IS HORRID TEST CODE
@@ -37,8 +35,8 @@
 
 (defn make-npc []
   (make-entity (make-comp Position 
-                          (rand-int (get-in *CONFIG* [:screen-width]) )
-                          (rand-int (get-in *CONFIG* [:screen-height]))
+                          (rand-int (config-get [:screen-width]) )
+                          (rand-int (config-get [:screen-height]))
                           0)
                (rand-direction)
                (rand-velocity 5)
@@ -73,7 +71,7 @@
   (send-off *agent* #'mover)
   (doseq [npc (vals @npcs)] 
    ;(let [moved-npc (apply assoc-comps npc (vals (random-movement npc 15)))]
-    (let [new-comps (apply-compfn move-toward-player @player-entity npc)
+    (let [new-comps (compfn move-toward-player @player-entity npc)
           moved-npc (apply assoc-comps npc (vals new-comps))]
       (dosync
         (assoc-npc-in-pool moved-npc))))
@@ -92,9 +90,9 @@
   (dosync
     (let [start-time (System/nanoTime)
           an-ent (alter player-entity
-                         (fn [e] (assoc-comps e (apply-compfn delta-loc e))))
+                         (fn [e] (assoc-comps e (compfn delta-loc e))))
           new-ent (alter player-entity
-                         (fn [e] (assoc-comps e (apply-compfn direction-img e))))
+                         (fn [e] (assoc-comps e (compfn direction-img e))))
           all-ents (cons new-ent (vals @npcs))]
         (doseq [e all-ents]
           (push g
@@ -125,8 +123,8 @@
   (println "Setting up frame!")
   (let [screen (canvas :id :gamescreen
                        :paint paint-world
-                       :size [(get-in *CONFIG* [:screen-width]) :by 
-                              (get-in *CONFIG* [:screen-height])])
+                       :size [(config-get [:screen-width]) :by 
+                              (config-get [:screen-height])])
         t (timer (fn [e] (repaint! screen)) :delay 60)
         f (frame :title "My Game"
                  :content screen
@@ -138,7 +136,7 @@
 
 (defn -main []
   (println "in -main")
-  (binding [*CONFIG* (load-config "config.clj")]
+  (with-config (load-config "config.clj")
     (dosync
       (dotimes [_ 10]
         (assoc-npc-in-pool (make-npc))))
