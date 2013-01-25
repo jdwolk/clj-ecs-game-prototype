@@ -51,3 +51,7 @@
 
 (defn rand-direction []
   (make-comp Direction (rand-dir)))
+
+(defn rand-pos [max-x max-y]
+  (make-comp Position (rand-int (inc max-x)) (rand-int (inc max-y)) 0))
+

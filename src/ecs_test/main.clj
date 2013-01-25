@@ -2,7 +2,8 @@
   (:use (ecs-test core)
         (ecs-test.systems rendering movement core ai)
         (seesaw core graphics color))
-  (:require [ecs-test.utils.configmgr :refer [with-config config-get load-config]])
+  (:require [ecs-test.utils.configmgr :refer [with-config config-get load-config]]
+            [ecs-test.engine.time :refer [calc-fps]])
   (:import (ecs-test.systems.rendering.Visual)
            (ecs-test.systems.movement.Position)
            (ecs-test.systems.movement.Direction)
@@ -28,26 +29,24 @@
 
 (defn make-body [x y dir & {vis :visual :or
                            {vis :player_down}}]
+  "int -> int -> keyword -> keyword -> Entity"
   (make-entity (make-comp Position x y 0)
                (make-comp Direction dir)
                (make-comp Velocity 0)
                (make-comp Visual vis)))
 
+;TODO need to make Components more composable.
+;TODO refactor make-npc in terms of make-body
 (defn make-npc []
-  (make-entity (make-comp Position 
-                          (rand-int (config-get [:screen-width]) )
-                          (rand-int (config-get [:screen-height]))
-                          0)
+  (make-entity (rand-pos (config-get [:screen-width])
+                         (config-get [:screen-height]))
                (rand-direction)
                (rand-velocity 5)
                (make-comp Visual :player_up)))
                ;(make-comp Behavior :random-movement)))
 
 (def player-entity 
-  (ref (make-entity (make-comp Position 10 300 0)
-                    (make-comp Direction :S)
-                    (make-comp Velocity 0)
-                    (make-comp Visual :player_down))))
+  (ref (make-body 10 300 :S)))
 
 ;TODO move somewhere else
 (defn draw-entity [#^SunGraphics2D g ent]
@@ -56,13 +55,13 @@
     (draw g (image-shape (:x pos) (:y pos) img)
           (style :background (color 224 0 0 128)))))
 
-(defn draw-text [#^SunGraphics2D g words x y s]
+(defn draw-text [#^SunGraphics2D g words x y size]
                  ;& {s :size x :x y :y 
                  ;:or {s 24 x 20 y 20}}]
   (push g
     (draw g (string-shape x y words)
             (style :foreground (color 0 0 0)
-                   :font (str "ARIAL-BOLD-" s)))))
+                   :font (str "ARIAL-BOLD-" size)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (def move-agent (agent nil))
@@ -78,13 +77,6 @@
   (. Thread (sleep 100)))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  
-;1000000000 nanos in 1 sec
-;1 frame/dnanos * nanos / sec = frame / sec
-;TODO move to engine/clock.clj
-(defn calc-fps [start end]
-  (let [dnanos (- end start)
-        npsec 1000000000]
-    (int (* (/ 1 dnanos) npsec))))
 
 (defn paint-world [#^JPanel c #^SunGraphics2D g]
   (dosync
