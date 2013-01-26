@@ -74,7 +74,7 @@
           moved-npc (apply assoc-comps npc (vals new-comps))]
       (dosync
         (assoc-npc-in-pool moved-npc))))
-  (. Thread (sleep 100)))
+  (. Thread (sleep 100))) ;XXX this is bad and arbitrary
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  
 

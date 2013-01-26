@@ -4,25 +4,21 @@
 
 ;; Components
 
-(defprotocol IComponent
-  (get-entity-id [this]))
+;(defprotocol IComponent
+;  (get-entity-id [this]))
 
 (defmacro defcomponent [name fields]
-  `(defrecord ~name [~'entity-id ~@fields]
-    IComponent
-    (get-entity-id [this#] (:entity-id this#))))
+  `(defrecord ~name [~@fields]))
+  ;`(defrecord ~name [~'entity-id ~@fields]))
+  ;  IComponent
+  ;  (get-entity-id [this#] (:entity-id this#))))
 
 (defmacro make-comp 
-  "Component is not fully realized until
-   called with an id to bind as :entity-id, i.e.:
-   ((make-comp SomeComp 'hi' 'there') '123456')"
   [ctype & values]
   (let [rec-sym (symbol (str "->" ctype))]
-    `(fn [ent-id#]
-      (~rec-sym ent-id# ~@values))))
-
-(defn assoc-entity-id [id comp]
-  (comp id))
+    `(~rec-sym ~@values)))
+    ;`(fn [ent-id#]
+    ;  (~rec-sym ent-id# ~@values))))
 
 ;; Entities
 
@@ -38,17 +34,14 @@
   (get-ent-id [this] (:id this))
   (get-comp [this ctype] ((:comps this) ctype))
   (get-comps [this] (:comps this))
-  (assoc-comp [this partial-comp]
-    (let [id (get-ent-id this)
-          c (if (not (coll? partial-comp)) ; Skip fully-realized comps
-                (assoc-entity-id id partial-comp)
-                partial-comp)]
+  (assoc-comp [this c]
+    (let [id (get-ent-id this)]
       (->Entity id (assoc (:comps this) 
                           (class->keyword (class c))
                           c))))
   (dissoc-comp [this ctype]
       (->Entity (get-ent-id this) (dissoc (:comps this) ctype))))
-
+ 
 ;TODO protocols can't take variadic args
 ; so I have to do this here
 (defn assoc-comps [ent & partial-comps]
@@ -58,7 +51,6 @@
   (reduce assoc-comps
           (->Entity (generate-id) {})  ; initial value
           comps))
-
 
 (comment
   "IDEAS:

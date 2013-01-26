@@ -1,5 +1,5 @@
 (ns ecs-test.systems.rendering
-  (:require [ecs-test.core :refer [defcomponent make-comp assoc-entity-id get-ent-id]]
+  (:require [ecs-test.core :refer [defcomponent make-comp get-ent-id]]
             [ecs-test.utils.assetmgr :refer [load-images asset-content]]))
 
 (def img-map (load-images ["player_down" "player_up" "player_left" "player_right"]))
@@ -20,15 +20,15 @@
 ; that represents not only the entity's type, but also, i.e., what
 ; weapons/aromor it has that determine the appearance
 ;XXX is :Visual comp even needed???
-(defn direction-img [{dir :Direction vis :Visual}]
+(defn direction-img [{dir :Direction}]
   "Direction -> Visual -> Visual
    Given Direction and Visual components, returns a new
    Visual component (ie. the asset that represents that entity
    turned in that direction)"
-  ;TODO do something w/ visual component
-  (assoc-entity-id (:entity-id vis)
-                   (lookup-direction-img (:dir dir))))
+  (lookup-direction-img (:dir dir)))
 
+;XXX for some reason, the current way is about 2x faster than
+;    calling w/ compfn and [{vis :Visual} & {images ...}]
 (defn lookup-img [vis & {images :img-map :or {images img-map}}]
   " Visual -> asset-content (i.e. ImageIcon)
     Looks up Visual component image in img-map (default to one above)"

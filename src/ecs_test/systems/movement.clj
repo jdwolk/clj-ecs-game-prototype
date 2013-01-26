@@ -38,9 +38,7 @@
                                     (:y pos) 
                                     (:units vel)
                                     (:dir dir))]
-    (assoc-entity-id 
-      (:entity-id pos)
-      (make-comp Position newx newy (:z pos)))))
+      (make-comp Position newx newy (:z pos))))
 
 ;XXX what are these? Compfns?
 (defn zero-velocity []
