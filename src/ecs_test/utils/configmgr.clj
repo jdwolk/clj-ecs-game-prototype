@@ -1,5 +1,5 @@
 (ns ecs-test.utils.configmgr
-  (:use (clojure pprint)))
+  (:require [ecs-test.utils.assetmgr :refer [load-manifest asset-content]]))
 
 (def ^:dynamic *config*)
 
@@ -7,10 +7,7 @@
 
 (defn load-config
   ([cfg-file]
-    (let [cfg (load-file cfg-file)]
-      (println "Config contents:")
-      (pprint cfg)
-      cfg))
+   (asset-content (load-manifest cfg-file)))
   ([]
     (load-config "config.clj")))
 

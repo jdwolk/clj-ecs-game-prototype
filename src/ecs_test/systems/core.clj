@@ -1,4 +1,5 @@
 (ns ecs-test.systems.core
+  (:require [ecs-test.utils.logger :refer [log]])
   (:use (ecs-test core)))
 
 (defn ents-satisfying [aspect-fn ents]
@@ -15,14 +16,13 @@
 
 (defn compfn [c-fn & ents]
   "Should use for calling all compfns on entities"
-  ;(compfn (:comps ent)))
+  ;(log :debug :systems/Core "Compfn: " c-fn)
   (apply c-fn (map :comps ents)))
 
 (defn apply-if [aspectfn c-fn & ents]
   "Applies a Component fn to one or more entities if they all meet aspect-fn"
   (if (every? aspectfn ents)
       (do
-        (println (str "ENTS: " ents))
         (apply (partial compfn c-fn) ents))))
 
 ;(def e (make-entity (make-comp Position 1 1 1)))

@@ -2,9 +2,11 @@
   (:require [ecs-test.core :refer [defcomponent make-comp ]]
             [ecs-test.systems.movement :refer [delta-loc rand-direction
                                         rand-velocity ->Direction]]
-            [ecs-test.systems.rendering :refer [direction-img]])
+            [ecs-test.systems.rendering :refer [direction-img]]
+            ecs-test.systems.ident)
   (:use (ecs-test.systems core))
   (:import (ecs-test.systems.movement.Position)
+           (ecs-test.systems.ident.EntType)
            (ecs-test.systems.movement.Direction)
            (ecs-test.systems.movement.Velocity)))
 
@@ -25,7 +27,7 @@
 
 ;XXX is this a comp-fn?
 ;TODO take out hardcoded 5 in delta-loc :Velocity
-(defn make-rand-move [{pos :Position vis :Visual}]
+(defn make-rand-move [{et :EntType pos :Position vis :Visual}]
   (let [new-dir (rand-direction)
         new-vel (rand-velocity 5)]
    {:Position (compfn delta-loc {:comps
@@ -33,10 +35,11 @@
                                         :Position pos
                                         :Velocity new-vel}})
     :Visual (compfn direction-img {:comps
-                                         {:Direction new-dir
-                                          :Visual vis}})}))
+                                       {:EntType et
+                                        :Direction new-dir}})}))
 
-(defn move-toward-player [{player-pos :Position} {curr-pos :Position vis :Visual}]
+(defn move-toward-player [{player-pos :Position}
+                          {et :EntType curr-pos :Position vis :Visual}]
   (let [go-horiz (rand-nth [true false])
         new-vel (rand-velocity 5)
         new-dir (if go-horiz
@@ -51,7 +54,8 @@
                                         :Position curr-pos
                                         :Velocity new-vel}})
      :Visual (compfn direction-img {:comps
-                                         {:Direction new-dir}})}))
+                                       {:EntType et 
+                                        :Direction new-dir}})}))
 
 (defn random-movement [ent one-in-x]
   "Entity -> int -> {Component}"

@@ -1,10 +1,12 @@
 (ns ecs-test.main
   (:use (ecs-test core)
-        (ecs-test.systems rendering movement core ai)
+        (ecs-test.systems rendering movement core ident ai)
         (seesaw core graphics color))
   (:require [ecs-test.utils.configmgr :refer [with-config config-get load-config]]
+            [ecs-test.utils.logger :refer [log]]
             [ecs-test.engine.time :refer [calc-fps]])
   (:import (ecs-test.systems.rendering.Visual)
+           (ecs-test.systems.ident.EntType)
            (ecs-test.systems.movement.Position)
            (ecs-test.systems.movement.Direction)
            (ecs-test.systems.movement.Velocity)
@@ -25,12 +27,14 @@
 ; its a horrible hack
 (defn assoc-npc-in-pool [npc]
   (if npc
+    (log :debug3 :main "Altered npc " npc)
     (alter npcs assoc (get-ent-id npc) npc)))
 
 (defn make-body [x y dir & {vis :visual :or
                            {vis :player_down}}]
   "int -> int -> keyword -> keyword -> Entity"
-  (make-entity (make-comp Position x y 0)
+  (make-entity (make-comp EntType "basicnpc")
+               (make-comp Position x y 0)
                (make-comp Direction dir)
                (make-comp Velocity 0)
                (make-comp Visual vis)))
@@ -38,7 +42,8 @@
 ;TODO need to make Components more composable.
 ;TODO refactor make-npc in terms of make-body
 (defn make-npc []
-  (make-entity (rand-pos (config-get [:screen-width])
+  (make-entity (make-comp EntType "basicnpc")
+               (rand-pos (config-get [:screen-width])
                          (config-get [:screen-height]))
                (rand-direction)
                (rand-velocity 5)
@@ -69,6 +74,7 @@
 (defn mover [x]
   (send-off *agent* #'mover)
   (doseq [npc (vals @npcs)] 
+    (log :debug3 :main "In mover")
    ;(let [moved-npc (apply assoc-comps npc (vals (random-movement npc 15)))]
     (let [new-comps (compfn move-toward-player @player-entity npc)
           moved-npc (apply assoc-comps npc (vals new-comps))]
@@ -79,6 +85,7 @@
  
 
 (defn paint-world [#^JPanel c #^SunGraphics2D g]
+  (log :debug3 :main "Painting")
   (dosync
     (let [start-time (System/nanoTime)
           an-ent (alter player-entity
@@ -101,18 +108,18 @@
   (dosync
   (alter player-entity assoc-comps (make-comp Velocity 5))
   (case (KeyEvent/getKeyText (.getKeyCode e))
-    "Down" (alter player-entity assoc-comps (make-comp Direction :S))
+    "Down" (do (log :debug2 :main "Pressed down")  (alter player-entity assoc-comps (make-comp Direction :S)))
     "Up"   (alter player-entity assoc-comps (make-comp Direction :N))
     "Left" (alter player-entity assoc-comps (make-comp Direction :W))
     "Right" (alter player-entity assoc-comps (make-comp Direction :E))
-    :else  (println "SOMETHING was pressed"))))
+    :else  (log :error :MAIN "SOMETHING was pressed"))))
 
 (defn key-up [#^KeyEvent e]
   (dosync
     (alter player-entity assoc-comps (zero-velocity))))
 
 (defn setup-frame []
-  (println "Setting up frame!")
+  (log :info :main "Setting up frame!")
   (let [screen (canvas :id :gamescreen
                        :paint paint-world
                        :size [(config-get [:screen-width]) :by 
@@ -127,7 +134,8 @@
     (-> f pack! show!)))
 
 (defn -main []
-  (println "in -main")
+  (log :info :main "Starting game")
+  (something "entities/basicnpc")
   (with-config (load-config "config.clj")
     (dosync
       (dotimes [_ 10]
