@@ -5,7 +5,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :local-repo "lib"
   :profiles {:dev {:plugins [[lein-midje "2.0.0-SNAPSHOT"]]}}
-  :resource-paths ["config.clj" ;TODO do something about this
+  :resource-paths ["." ;TODO do something about this
                    "assets"
                    "assets/sprites"
                    "src/ecs_test/game/manifests"]

@@ -1,5 +1,5 @@
 (ns ecs-test.utils.assetmgr
-  (:use (clojure pprint))
+  ;(:use (clojure pprint))
   (:require [ecs-test.utils.logger :refer [log]])
   (:import [javax.swing ImageIcon]
            [java.io File]
@@ -52,8 +52,8 @@
                  filepath (.getPath (clojure.java.io/resource filename))
                  contents (load-file filepath)]
             (log :debug2 :assetmgr "Filepath: " filepath)
-            (log :info :assetmgr (str "Manifest " f " contents:"))
-            (pprint contents)
+            (log :info :assetmgr "Manifest " f " contents:" contents)
+            ;(pprint contents)
             contents))))
 
 (defn load-images [names]
