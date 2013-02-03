@@ -39,8 +39,7 @@
                                         :Direction new-dir}})}))
 
 (defn move-toward-player [{player-pos :Position}
-                          {et :EntType curr-pos :Position vis :Visual}
-                          dir-map]
+                          {et :EntType curr-pos :Position vis :Visual}]
   (let [go-horiz (rand-nth [true false])
         new-vel (rand-velocity 5)
         new-dir (if go-horiz
@@ -56,8 +55,7 @@
                                         :Velocity new-vel}})
      :Visual (compfn direction-img {:comps
                                        {:EntType et 
-                                        :Direction new-dir}}
-                                   dir-map)}))
+                                        :Direction new-dir}})}))
 
 (defn random-movement [ent one-in-x]
   "Entity -> int -> {Component}"
