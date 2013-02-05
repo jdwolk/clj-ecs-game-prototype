@@ -1,9 +1,10 @@
 (ns ecs-test.utils.assetmgr
-  ;(:use (clojure pprint))
+(import java.util.jar.JarFile)
   (:require [ecs-test.utils.logger :refer [log]])
   (:import [javax.swing ImageIcon]
            [java.io File]
-           [java.net URI]))
+           [java.net URI]
+           [java.util.jar JarFile]))
 
 (comment
 (defn normpath [path]
@@ -40,7 +41,21 @@
 (defn load-img [name]
   (load-asset name (fn [s] (str s ".png")) safe-load-img))
 
-;(load-manifest "src/ecs_test/game/manifests/entities/basicnpc.clj")
+; Need to read in resources separately when on file system
+; than when in jar file
+(defn read-jar-resource [jarpath respath]
+  (let [jar (JarFile. jarpath)]
+    (slurp (.getInputStream jar (.getJarEntry jar respath)))))
+
+(defn load-jar-file 
+  "Loads a resource from a jar and evals it;
+   similar to load-file but for jar resources"
+  [jar-filepath manfile]
+  (if-let [matches (if (= "/" (System/getProperty "file.separator"))
+                       (re-find #"file:(.*\.jar).*" jar-filepath)
+                       (re-find #"file:/?(.*\.jar).*" jar-filepath))]
+    (let [jarpath (second matches)]
+      (eval (load-string (read-jar-resource jarpath manfile))))))
 
 (defn load-manifest
   "A manifest is just a description of other assets that
@@ -50,10 +65,10 @@
   (load-asset man-file identity 
    (fn [f] (let [filename (if (.endsWith f ".clj") f (str f ".clj"))
                  filepath (.getPath (clojure.java.io/resource filename))
-                 contents (load-file filepath)]
+                 contents (or (load-jar-file filepath filename)
+                              (load-file filepath))]
             (log :debug2 :assetmgr "Filepath: " filepath)
             (log :info :assetmgr "Manifest " f " contents:" contents)
-            ;(pprint contents)
             contents))))
 
 (defn load-images [names]

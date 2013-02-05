@@ -105,6 +105,7 @@
     (alter player-entity assoc-comps (zero-velocity))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (def mover (agent nil))
 
 (defn movement [x]
@@ -121,24 +122,27 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def screen (canvas :id :gamescreen
-                    :paint paint-world
-                    :size [650 :by 650])) ;[width :by height]))
-          
-(def animator (agent screen))
+; Must initialize to screen before sending off animation
+(def animator (agent nil)) 
 
-(defn animation [s]
+(defn animation [#^JPanel s]
   (send-off animator #'animation)
   (log :debug3 :anim-ag "Painting screen")
   (. s (repaint))
   (. Thread (sleep 100))
   s)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn setup-screen [width height]
+            (canvas :id :gamescreen
+                    :paint paint-world
+                    :size [width :by height]))
 
 (defn setup-frame []
   (log :info :main "Setting up frame!")
   (let [f (frame :title "My Game"
-                 :content screen
+                 :content @animator
                  :on-close :dispose)]
     (native!)
     (listen f :key-pressed  key-dispatch
@@ -153,9 +157,10 @@
     (dosync
       (dotimes [_ 10]
         (assoc-npc-in-pool (make-npc))))
-    ;(let [screen (setup-screen (config-get [:screen-width])
-    ;                           (config-get [:screen-height]))]
       (log :debug :main "Num npcs: " (count @npcs))
+      (send-off animator 
+                (fn [_] (setup-screen (config-get [:screen-width])
+                                      (config-get [:screen-height]))))
       (send-off animator animation)
       (send-off mover movement)
       (await-for 200 animator)

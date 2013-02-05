@@ -5,9 +5,8 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :local-repo "lib"
   :profiles {:dev {:plugins [[lein-midje "2.0.0-SNAPSHOT"]]}}
-  :resource-paths ["." ;TODO do something about this
-                   "assets"
-                   "assets/sprites"
+  :resource-paths ["src/ecs_test/game/assets"
+                   "src/ecs_test/game/assets/sprites"
                    "src/ecs_test/game/manifests"]
   :aot [ecs-test.main]
   :main ecs-test.main

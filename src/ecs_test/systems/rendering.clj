@@ -24,7 +24,7 @@
   ;[man-file img-map dir-map]
   [man-file]
   (let [contents (seq (asset-content (load-manifest man-file)))
-        [ent-type system-contents] (first contents)
+       [ent-type system-contents] (first contents)
         render-info (:rendering system-contents)]
     ;TODO handle multiple config sections!
     ;(doseq [[ent-type system-contents] contents] 
