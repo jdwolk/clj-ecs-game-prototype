@@ -5,7 +5,6 @@
 (comment
 (fact "Entities extend the Unique protocol"
   (not (nil? (get-id (make-entity)))) => true)
-)
 
 
 (defcomponent MyComp [a b])
@@ -18,4 +17,4 @@
 
 (fact "All components extend the Component protocol"
   (= 123456 (get-entity-id ((make-comp MyComp 1 2) 123456))) => true)
-  
+)  

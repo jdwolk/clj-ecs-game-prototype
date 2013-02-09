@@ -5,10 +5,10 @@
   (:import (ecs-test.systems.movement.Position)
            (ecs-test.systems.movement.Direction)))
 
-(fact "apply-compfn applies compfn to comps of entity"
+(fact "compfn applies compfn to comps of entity"
   (let [ent (make-entity (make-comp Position 0 0 0)
                          (make-comp Direction :N))]
-    (count (apply-compfn identity ent)) => 2))
+    (count (compfn identity ent)) => 2))
 
 (fact "apply-if applies compfn to comps of entity if
        all aspectfns are met"

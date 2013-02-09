@@ -28,8 +28,8 @@
 (defn assoc-npc-in-pool [npc]
   (if npc
     (do
-      (log :debug3 :main "Altered npc " (get-ent-id npc))
-      (alter npcs assoc (get-ent-id npc) npc))))
+      (log :debug3 :main "Altered npc " (get-id npc))
+      (alter npcs assoc (get-id npc) npc))))
 
 (defn make-body [x y dir & {vis :visual :or
                            {vis :player_down}}]

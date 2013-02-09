@@ -7,7 +7,7 @@
 
 (defn load-config
   ([cfg-file]
-   (asset-content (load-manifest cfg-file)))
+    (asset-content (load-manifest cfg-file)))
   ([]
     (load-config "config.clj")))
 

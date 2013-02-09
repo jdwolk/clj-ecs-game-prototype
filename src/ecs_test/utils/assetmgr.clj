@@ -6,40 +6,36 @@
            [java.net URI]
            [java.util.jar JarFile]))
 
-(comment
-(defn normpath [path]
-  (->  (URI. path)
-      .normalize
-      .getPath))
-
-(defn pathjoin [& paths]
-    (normpath (apply str (interpose File/separator paths))))
-)
+(defn resource-path 
+  "Wrapper around clojure.java.io/resource so
+   I can make better mocks that don't hit the filesystem"
+  [resource-name]
+  (.getPath (clojure.java.io/resource resource-name)))
 
 (defprotocol Asset
   (asset-name [this]) ; :keyword representing the asset
   (path-to [this])    ;  path on disk to the asset
   (asset-content [this])) ; the in-memory content of the actual asset
 
-(defn safe-load-img [imgpath]
-  "Loads a standard images (notfound.png) if 
-   the image at imgpath is not found" 
-  (try
-    (ImageIcon. (clojure.java.io/resource imgpath))
-  (catch NullPointerException npe
-    (ImageIcon. (clojure.java.io/resource "notfound.png")))))
-
-(defn load-asset [name path-fn load-fn]
+(defn as-asset [name path-fn load-fn]
   (let [path (path-fn name)
+        _    (log :info :assetmgr "Loading asset " path)
         content (load-fn path)]
-    (log :info :assetmgr "Loading " path)
     (reify Asset
       (asset-name [_] name)
       (path-to [_] path)
       (asset-content [_] content))))
 
+(defn safe-load-img [imgpath]
+  "Loads a standard images (notfound.png) if 
+   the image at imgpath is not found" 
+  (try
+    (ImageIcon. (resource-path imgpath))
+  (catch NullPointerException npe
+    (ImageIcon. (resource-path "notfound.png")))))
+
 (defn load-img [name]
-  (load-asset name (fn [s] (str s ".png")) safe-load-img))
+  (as-asset name (fn [s] (str s ".png")) safe-load-img))
 
 ; Need to read in resources separately when on file system
 ; than when in jar file
@@ -62,14 +58,17 @@
    need to be loaded, i.e. a set of images for depicting an entity,
    a file representing a level's layout, etc"
   [man-file]
-  (load-asset man-file identity 
-   (fn [f] (let [filename (if (.endsWith f ".clj") f (str f ".clj"))
-                 filepath (.getPath (clojure.java.io/resource filename))
-                 contents (or (load-jar-file filepath filename)
-                              (load-file filepath))]
-            (log :debug2 :assetmgr "Filepath: " filepath)
-            (log :info :assetmgr "Manifest " f " contents:" contents)
-            contents))))
+  (let [filename (if (.endsWith man-file ".clj")
+                     man-file
+                    (str man-file ".clj"))
+        filepath (resource-path filename)]
+    (as-asset filename
+      (constantly filepath) 
+      (fn [f] (let [contents (or (load-jar-file filepath filename)
+                                 (load-file filepath))]
+        (log :debug2 :assetmgr "Filepath: " filepath)
+        (log :info :assetmgr "Manifest " f " contents:" contents)
+        contents)))))
 
 (defn load-images [names]
   (zipmap (map keyword names) (map load-img names)))

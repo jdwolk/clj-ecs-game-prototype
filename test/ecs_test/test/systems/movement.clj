@@ -51,5 +51,3 @@
                     :Direction ((make-comp Direction :W) "blah-id")}))
       => -1))
 
-
-

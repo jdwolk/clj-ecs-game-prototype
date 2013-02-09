@@ -1,5 +1,5 @@
 (ns ecs-test.systems.rendering
-  (:require [ecs-test.core :refer [defcomponent make-comp get-ent-id]]
+  (:require [ecs-test.core :refer [defcomponent make-comp]]
             [ecs-test.utils.assetmgr :refer [load-images asset-content load-manifest]]
             [ecs-test.utils.logger :refer [log]]))
 

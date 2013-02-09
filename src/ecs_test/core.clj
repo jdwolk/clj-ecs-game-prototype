@@ -2,45 +2,46 @@
   (:require [ecs-test.utils.misc :refer [splitlast class->keyword
                                          generate-id]]))
 
+; Components and Entities are both Unique
+(defprotocol Unique
+  (get-id [self]))
+
 ;; Components
 
 ;(defprotocol IComponent
 ;  (get-entity-id [this]))
 
 (defmacro defcomponent [name fields]
-  `(defrecord ~name [~@fields]))
-  ;`(defrecord ~name [~'entity-id ~@fields]))
-  ;  IComponent
-  ;  (get-entity-id [this#] (:entity-id this#))))
+  `(defrecord ~name [~'id ~@fields]
+    Unique ;IComponent
+    (get-id [this#] (:id this#))))
 
 (defmacro make-comp 
   [ctype & values]
   (let [rec-sym (symbol (str "->" ctype))]
-    `(~rec-sym ~@values)))
-    ;`(fn [ent-id#]
-    ;  (~rec-sym ent-id# ~@values))))
+    `(~rec-sym ~(generate-id) ~@values)))
 
 ;; Entities
 
 (defprotocol IEntity
-  (get-ent-id [this]) ; TODO factor out into Unique protocol
   (get-comp [this ctype])
   (get-comps [this])   ; a map of {CompName comp}
   (assoc-comp [this partial-comp])
   (dissoc-comp [this ctype]))
 
 (defrecord Entity [id comps]
+  Unique
+    (get-id [this] (:id this))
   IEntity
-  (get-ent-id [this] (:id this))
-  (get-comp [this ctype] ((:comps this) ctype))
-  (get-comps [this] (:comps this))
-  (assoc-comp [this c]
-    (let [id (get-ent-id this)]
-      (->Entity id (assoc (:comps this) 
-                          (class->keyword (class c))
-                          c))))
-  (dissoc-comp [this ctype]
-      (->Entity (get-ent-id this) (dissoc (:comps this) ctype))))
+    (get-comp [this ctype] ((:comps this) ctype))
+    (get-comps [this] (:comps this))
+    (assoc-comp [this c]
+      (let [id (get-id this)]
+        (->Entity id (assoc (:comps this)
+                            (class->keyword (class c))
+                            c))))
+    (dissoc-comp [this ctype]
+      (->Entity (get-id this) (dissoc (:comps this) ctype))))
  
 ;TODO protocols can't take variadic args
 ; so I have to do this here
