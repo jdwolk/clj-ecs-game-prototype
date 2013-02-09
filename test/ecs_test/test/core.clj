@@ -2,19 +2,23 @@
   (:use (ecs-test core)
         (midje sweet)))
 
-(comment
+(defcomponent TestComp123 [a])
+
 (fact "Entities extend the Unique protocol"
   (not (nil? (get-id (make-entity)))) => true)
 
+(fact "Components extend the Unique protocol"
+  (not (nil? (get-id (make-comp TestComp123 "test")))) => true)
 
-(defcomponent MyComp [a b])
+(fact "Component ids have unique values"
+  (= (get-id (make-comp TestComp123 "hello"))
+     (get-id (make-comp TestComp123 "hello"))) => false)
+
 (fact "Entities extend the Entity protocol "
-  (let [entity (make-entity (make-comp MyComp "hello" "there"))]
-      (empty? (get-comp (make-entity) MyComp)) => true
+  (let [entity (make-entity (make-comp TestComp123 "hello"))]
+      (empty? (get-comp (make-entity) TestComp123)) => true
       (empty? (get-comps (make-entity))) => true
-      (= 1 (count (get-comp entity MyComp))) = true
+      (= 1 (count (get-comp entity TestComp123))) = true
       (= 1 (count (get-comps entity))) => true))
 
-(fact "All components extend the Component protocol"
-  (= 123456 (get-entity-id ((make-comp MyComp 1 2) 123456))) => true)
-)  
+
