@@ -132,6 +132,10 @@
   (. Thread (sleep 100))
   s)
 
+(defn kill-agent-loop [an-agent]
+  (await (send-off an-agent (fn [_] nil)))
+  (log :debug :main "Killed agent loop " an-agent))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn setup-screen [width height]
@@ -143,7 +147,7 @@
   (log :info :main "Setting up frame!")
   (let [f (frame :title "My Game"
                  :content @animator
-                 :on-close :dispose)]
+                 :on-close :exit)]
     (native!)
     (listen f :key-pressed  key-dispatch
               :key-released key-up)
@@ -151,18 +155,17 @@
 
 (defn -main []
   (log :info :main "Starting game")
-  (something "entities/basicnpc")
-  (something "entities/player")
+  (load-entity! "entities/basicnpc")
+  (load-entity! "entities/player")
   (with-config (load-config "config.clj")
     (dosync
       (dotimes [_ 10]
         (assoc-npc-in-pool (make-npc))))
-      (log :debug :main "Num npcs: " (count @npcs))
-      (send-off animator 
-                (fn [_] (setup-screen (config-get [:screen-width])
-                                      (config-get [:screen-height]))))
-      (send-off animator animation)
-      (send-off mover movement)
-      (await-for 200 animator)
-      (setup-frame)))
+    (send-off animator 
+      (fn [_] (setup-screen (config-get [:screen-width])
+                            (config-get [:screen-height]))))
+    (send-off animator animation)
+    (send-off mover movement)
+    (await-for 200 animator)
+    (setup-frame)))
 

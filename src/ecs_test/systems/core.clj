@@ -25,10 +25,3 @@
       (do
         (apply (partial compfn c-fn) ents))))
 
-;(def e (make-entity (make-comp Position 1 1 1)))
-;(println (apply-if (or* (has-all-comps :Position :Direction)
-;                        (has-all-comps :Direction))
-;                   delta-loc
-;                   [e]))
-
-                   
