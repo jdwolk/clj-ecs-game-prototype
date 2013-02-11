@@ -13,7 +13,8 @@
            (ecs-test.systems.ai.Behavior)
            (java.awt.event KeyEvent)
            (javax.swing JPanel)       ; for type hinting
-           (sun.java2d SunGraphics2D)) ; for type hinting
+           (sun.java2d SunGraphics2D) ; for type hinting
+           (java.awt.event WindowListener))
   (:gen-class
     :main main))
 
@@ -34,7 +35,7 @@
 (defn make-body [x y dir & {vis :visual :or
                            {vis :player_down}}]
   "int -> int -> keyword -> keyword -> Entity"
-  (make-entity (make-comp EntType :player_basic)
+  (make-entity (make-comp EntType :player)
                (make-comp Position x y 0)
                (make-comp Direction dir)
                (make-comp Velocity 0)
@@ -143,6 +144,17 @@
                     :paint paint-world
                     :size [width :by height]))
 
+(defn kill-agents-on-close [agents]
+  (reify WindowListener
+    (windowActivated [this e])
+    (windowClosing [this e]
+      (doseq [a agents] (kill-agent-loop a)))
+    (windowDeactivated [this e])
+    (windowDeiconified [this e])
+    (windowIconified [this e])
+    (windowOpened [this e])
+    (windowClosed [this e])))
+
 (defn setup-frame []
   (log :info :main "Setting up frame!")
   (let [f (frame :title "My Game"
@@ -151,6 +163,7 @@
     (native!)
     (listen f :key-pressed  key-dispatch
               :key-released key-up)
+    (.addWindowListener f (kill-agents-on-close [mover animator]))
     (-> f pack! show!)))
 
 (defn -main []

@@ -3,7 +3,7 @@
   (:use [clj-logging-config.log4j :exclude [log]]
         [clojure.tools.logging :rename {log tools-log}]))
 
-(def ^:dynamic *verbosity* 1)
+(def ^:dynamic *verbosity* 2)
 (def log-agent (agent 0))
 
 (def debug-lvls  (zipmap [:debug1 :debug2 :debug3]

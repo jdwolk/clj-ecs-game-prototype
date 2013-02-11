@@ -10,7 +10,7 @@
   "Wrapper around clojure.java.io/resource so
    I can make better mocks that don't hit the filesystem"
   [resource-name]
-  (.getPath (clojure.java.io/resource resource-name)))
+  (clojure.java.io/resource resource-name))
 
 (defprotocol Asset
   (asset-name [this]) ; :keyword representing the asset
@@ -61,7 +61,7 @@
   (let [filename (if (.endsWith man-file ".clj")
                      man-file
                     (str man-file ".clj"))
-        filepath (resource-path filename)]
+        filepath (.getPath (resource-path filename))]
     (as-asset filename
       (constantly filepath) 
       (fn [f] (let [contents (or (load-jar-file filepath filename)
@@ -70,8 +70,16 @@
         (log :info :assetmgr "Manifest " f " contents:" contents)
         contents)))))
 
+(defn filename->keyword [man-file]
+  (keyword (second (re-find #".*/(.+).clj" man-file))))
+
 (defn load-images [names]
   (zipmap (map keyword names) (map load-img names)))
+
+(defn get-system 
+  "Pulls a particular system's content out of an EntityManifest"
+  [entity-manifest system-key]
+  (system-key entity-manifest))
 
 ;(defprotocol ImageManifest
 ;  "An ImageManifest is a description of image assets
