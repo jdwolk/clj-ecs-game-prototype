@@ -15,16 +15,24 @@
 (defn image-union [dir-img-map]
   (map name (apply union (vals dir-img-map))))
 
+(defn assoc-ent-dirs [all-dir-imgs ent-type dir-imgs]
+  (let [new-map (assoc all-dir-imgs ent-type dir-imgs)]
+    (log :debug2 :rendering "Contents of new dir-map: " new-map)
+    new-map))
+
+(defn assoc-ent-imgs [all-imgs dir-imgs]
+  (let [new-map (merge all-imgs (load-images (image-union dir-imgs)))]
+    (log :debug2 :rendering "Contents of new img-map: " new-map)
+    new-map))
+
 (defn load-entity!
   [man-file]
   (let [entity-manifest (load-manifest man-file)
         manifest-content (asset-content entity-manifest)
         ent-type (filename->keyword (asset-name entity-manifest))
         dir-imgs (get-dir-imgs manifest-content)]
-    (dosync (alter dir-map assoc ent-type dir-imgs))
-    (dosync (alter img-map merge (load-images (image-union dir-imgs))))
-    (log :debug2 :rendering "Contents of img-map: " @img-map)
-    (log :debug2 :rendering "Contents of dir-map: " @dir-map)))
+    (dosync (alter dir-map assoc-ent-dirs ent-type dir-imgs))
+    (dosync (alter img-map assoc-ent-imgs dir-imgs))))
 
 ;;;;;;;;;;; Component fns ;;;;;;;;;;;;;
 

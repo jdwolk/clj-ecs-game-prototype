@@ -18,6 +18,7 @@
       (path-to a)       => "an-image.png"
       (asset-content a) => "IMAGEICON: an-image.png")))
 
+(comment
 (fact "load-manifest returns an Asset representing a manifest file"
   (let [contents {:fake-ent {:rendering ["hello" "there"]}}]
     (with-redefs-fn {#'ecs-test.utils.assetmgr/resource-path
@@ -28,6 +29,7 @@
         (asset-name asset)    => "manifest.clj"
         (path-to asset)       => "/some/path/to/manifest.clj"
         (asset-content asset) => contents))))
+)
 
 (fact "load-images gives a map or {:img-name img-asset}"
   (with-redefs-fn {#'ecs-test.utils.assetmgr/as-asset
