@@ -29,7 +29,6 @@
 (defn assoc-npc-in-pool [npc]
   (if npc
     (do
-      ;(log :debug3 :main "Altered npc " (get-id npc))
       (alter npcs assoc (get-id npc) npc))))
 
 (defn make-body [x y dir & {vis :visual :or
@@ -37,10 +36,9 @@
   "int -> int -> keyword -> keyword -> Entity"
   (make-entity (make-comp EntType :player)
                (make-comp Position x y 0)
-               (make-comp Direction dir)
+               (make-comp Direction dir nil)
                (make-comp Velocity 0)
                (make-comp Visual 0 [vis])))
-               ;(make-comp Visual vis))) 
 
 ;TODO need to make Components more composable.
 ;TODO refactor make-npc in terms of make-body
@@ -48,10 +46,9 @@
   (make-entity (make-comp EntType :basicnpc)
                (rand-pos (config-get [:screen-width])
                          (config-get [:screen-height]))
-               (rand-direction)
+               (rand-direction nil)
                (rand-velocity 5)
                (make-comp Visual 0 [:npc_up])))
-               ;(make-comp Visual :npc_up)))
                ;(make-comp Behavior :random-movement)))
 
 (def player-entity 
@@ -97,15 +94,15 @@
   (dosync
   (alter player-entity assoc-comps (make-comp Velocity 5))
   (case (KeyEvent/getKeyText (.getKeyCode e))
-    "Down" (alter player-entity assoc-comps (make-comp Direction :S))
-    "Up"   (alter player-entity assoc-comps (make-comp Direction :N))
-    "Left" (alter player-entity assoc-comps (make-comp Direction :W))
-    "Right" (alter player-entity assoc-comps (make-comp Direction :E))
+    "Down" (alter player-entity assoc-comps (make-comp Direction :S (:dir (get-comp @player-entity :Direction))))
+    "Up"   (alter player-entity assoc-comps (make-comp Direction :N (:dir (get-comp @player-entity :Direction))))
+    "Left" (alter player-entity assoc-comps (make-comp Direction :W (:dir (get-comp @player-entity :Direction))))
+    "Right" (alter player-entity assoc-comps (make-comp Direction :E (:dir (get-comp @player-entity :Direction))))
     :else  (log :error :MAIN "SOMETHING was pressed"))))
 
 (defn key-up [#^KeyEvent e]
   (dosync
-    (alter player-entity assoc-comps (zero-velocity))))
+      (alter player-entity assoc-comps (zero-velocity))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -115,7 +112,6 @@
   (send-off mover #'movement)
   (log :debug3 :move-ag "Moving entities")
   (doseq [npc (vals @npcs)] 
-   ;(let [moved-npc (apply assoc-comps npc (vals (random-movement npc 15)))]
     (let [new-comps (compfn move-toward-player @player-entity npc)
           moved-npc (apply assoc-comps npc (vals new-comps))]
       (log :debug3 :main "Moved npc: " moved-npc)

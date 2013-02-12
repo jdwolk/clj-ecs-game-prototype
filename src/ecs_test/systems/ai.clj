@@ -27,8 +27,9 @@
 
 ;XXX is this a comp-fn?
 ;TODO take out hardcoded 5 in delta-loc :Velocity
-(defn make-rand-move [{et :EntType pos :Position vis :Visual}]
-  (let [new-dir (rand-direction)
+(defn make-rand-move [{et :EntType pos :Position
+                       vis :Visual dir :Direction vel :Velocity}]
+  (let [new-dir (rand-direction (:dir dir))
         new-vel (rand-velocity 5)]
    {:Position (compfn delta-loc {:comps
                                        {:Direction new-dir
@@ -36,26 +37,31 @@
                                         :Velocity new-vel}})
     :Visual (compfn direction-img {:comps
                                        {:EntType et
-                                        :Direction new-dir}})}))
+                                        :Direction new-dir
+                                        :Visual vis
+                                        :Velocity vel}})}))
 
 (defn move-toward-player [{player-pos :Position}
-                          {et :EntType curr-pos :Position vis :Visual}]
+                          {et :EntType curr-pos :Position
+                           vis :Visual dir :Direction vel :Velocity}]
   (let [go-horiz (rand-nth [true false])
         new-vel (rand-velocity 5)
         new-dir (if go-horiz
                   (if (< (:x curr-pos) (:x player-pos))
-                      (make-comp Direction :E)
-                      (make-comp Direction :W))
+                      (make-comp Direction :E (:dir dir))
+                      (make-comp Direction :W (:dir dir)))
                   (if (< (:y curr-pos) (:y player-pos))
-                      (make-comp Direction :S)
-                      (make-comp Direction :N)))]
+                      (make-comp Direction :S (:dir dir))
+                      (make-comp Direction :N (:dir dir))))]
     {:Position (compfn delta-loc {:comps
                                        {:Direction new-dir
                                         :Position curr-pos
                                         :Velocity new-vel}})
      :Visual (compfn direction-img {:comps
                                        {:EntType et 
-                                        :Direction new-dir}})}))
+                                        :Direction new-dir
+                                        :Visual vis
+                                        :Velocity vel}})}))
 
 (defn random-movement [ent one-in-x]
   "Entity -> int -> {Component}"

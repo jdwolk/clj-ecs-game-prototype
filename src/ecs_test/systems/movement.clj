@@ -4,7 +4,7 @@
 
 ;(import '(ecs-test.systems.movement.Position))
 (defcomponent Position [x y z])  ; z is height above 'ground level'
-(defcomponent Direction [dir])
+(defcomponent Direction [dir prev-dir])
 (defcomponent Velocity [units])  ; units per ...milli?
 
 ;Translates symbolic representation of dirs to numeric
@@ -47,8 +47,8 @@
 (defn rand-velocity [max-vel]
   (make-comp Velocity (rand (inc max-vel))))
 
-(defn rand-direction []
-  (make-comp Direction (rand-dir)))
+(defn rand-direction [old-dir]
+  (make-comp Direction (rand-dir) old-dir))
 
 (defn rand-pos [max-x max-y]
   (make-comp Position (rand-int (inc max-x)) (rand-int (inc max-y)) 0))

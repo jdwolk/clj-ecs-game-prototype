@@ -4,7 +4,6 @@
             [ecs-test.utils.logger    :refer [log]]
             [clojure.set              :refer [union]]))
 
-;(defcomponent Visual [img-name])
 (defcomponent Visual [curr-frame frames])
 
 (def img-map (ref {}))
@@ -43,15 +42,26 @@
 
 ;;;;;;;;;;; Component fns ;;;;;;;;;;;;;
 
-(defn direction-img [{et :EntType dir :Direction}]
+(defn wrap-inc [n maxn]
+  (if (< n (dec maxn)) (inc n) 0))
+
+(defn direction-img [{et :EntType dir :Direction vis :Visual vel :Velocity}]
   "Direction -> Visual -> Visual
    Given Direction and Visual components, returns a new
    Visual component (ie. the asset that represents that entity
    turned in that direction)"
-  (let [t (:ent-type et), d (:dir dir)]
-    (log :debug2 :rendering (str "(direction-img): lookup " d " of " t " in dir map: " @dir-map))
-    ;TODO refactor (d (t ...
-    (make-comp Visual 0 (d (t @dir-map)))))
+  (let [e-type (:ent-type et)
+        {curr-dir :dir old-dir :prev-dir} dir
+        new-vis (if (or (not (= old-dir curr-dir)) (= 0 (:units vel)))
+                    (make-comp Visual 0 (curr-dir (e-type @dir-map)))
+                    (make-comp Visual 
+                               (wrap-inc  (:curr-frame vis) (count (:frames vis)))
+                               (:frames vis)))]
+    (log :debug2 :rendering "(direction-img) old-dir=" old-dir
+                             ", dir=" curr-dir
+                             ", equal?=" (= old-dir curr-dir)
+                             ", curr-frame=" (:curr-frame new-vis))
+    new-vis))
 
 ;XXX for some reason, the current way is about 2x faster than
 ;    calling w/ compfn and [{vis :Visual} & {images ...}]

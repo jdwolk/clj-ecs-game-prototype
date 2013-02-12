@@ -39,15 +39,15 @@
   (let [poscomp (make-comp Position 10 10 0)
         velcomp (make-comp Velocity 1)]
     (:y (delta-loc {:Position poscomp :Velocity velcomp 
-                    :Direction (make-comp Direction :N)}))
+                    :Direction (make-comp Direction :N nil)}))
       => 9
     (:x (delta-loc {:Position poscomp :Velocity velcomp
-                    :Direction (make-comp Direction :E)}))
+                    :Direction (make-comp Direction :E nil)}))
       => 11
     (:y (delta-loc {:Position poscomp :Velocity velcomp 
-                    :Direction (make-comp Direction :S)}))
+                    :Direction (make-comp Direction :S nil)}))
       => 11 
     (:x (delta-loc {:Position poscomp :Velocity velcomp 
-                    :Direction (make-comp Direction :W)}))
+                    :Direction (make-comp Direction :W nil)}))
       => 9))
 
