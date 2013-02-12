@@ -39,7 +39,8 @@
                (make-comp Position x y 0)
                (make-comp Direction dir)
                (make-comp Velocity 0)
-               (make-comp Visual vis))) 
+               (make-comp Visual 0 [vis])))
+               ;(make-comp Visual vis))) 
 
 ;TODO need to make Components more composable.
 ;TODO refactor make-npc in terms of make-body
@@ -49,7 +50,8 @@
                          (config-get [:screen-height]))
                (rand-direction)
                (rand-velocity 5)
-               (make-comp Visual :npc_up)))
+               (make-comp Visual 0 [:npc_up])))
+               ;(make-comp Visual :npc_up)))
                ;(make-comp Behavior :random-movement)))
 
 (def player-entity 

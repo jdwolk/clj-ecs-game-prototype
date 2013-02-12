@@ -4,7 +4,8 @@
             [ecs-test.utils.logger    :refer [log]]
             [clojure.set              :refer [union]]))
 
-(defcomponent Visual [img-name])
+;(defcomponent Visual [img-name])
+(defcomponent Visual [curr-frame frames])
 
 (def img-map (ref {}))
 (def dir-map (ref {}))
@@ -34,6 +35,12 @@
     (dosync (alter dir-map assoc-ent-dirs ent-type dir-imgs))
     (dosync (alter img-map assoc-ent-imgs dir-imgs))))
 
+(defn lookup-frame [n vis]
+  (nth (:frames vis) n))
+
+(defn lookup-curr-frame [vis]
+  (lookup-frame (:curr-frame vis) vis))
+
 ;;;;;;;;;;; Component fns ;;;;;;;;;;;;;
 
 (defn direction-img [{et :EntType dir :Direction}]
@@ -43,15 +50,16 @@
    turned in that direction)"
   (let [t (:ent-type et), d (:dir dir)]
     (log :debug2 :rendering (str "(direction-img): lookup " d " of " t " in dir map: " @dir-map))
-  ;TODO animation! Don't just take (first)
-    (make-comp Visual (first (d (t @dir-map))))))
+    ;TODO refactor (d (t ...
+    (make-comp Visual 0 (d (t @dir-map)))))
 
 ;XXX for some reason, the current way is about 2x faster than
 ;    calling w/ compfn and [{vis :Visual} & {images ...}]
 (defn lookup-img [vis]
   " Visual -> asset-content (i.e. ImageIcon)
     Looks up Visual component image in img-map (default to one above)"
-  (let [img-name (keyword (:img-name vis))
+  (let [;img-name (keyword (:img-name vis))
+        img-name (lookup-curr-frame vis)
         asset (asset-content (img-name @img-map))]
     (log :debug2 :rendering "(lookup-img): Looking up " img-name " in img map: " @img-map)
     (log :debug2 :rendering "(lookup-img): asset-content: " asset)

@@ -40,10 +40,22 @@
 
 (fact "direction-img makes a Visual comp based on the dir and ent-type"
   (with-redefs [ecs-test.systems.rendering/dir-map (ref {:awesome {:N [:facing-up]}})]
-    (let [comps {:EntType {:ent-type :awesome}, :Direction {:dir :N}}]
-      (:img-name (direction-img comps)) => :facing-up)))
+    (let [comps {:EntType {:ent-type :awesome}, :Direction {:dir :N}}
+          vis   (direction-img comps)]
+      ;(:img-name (direction-img comps)) => :facing-up)))
+      (:frames vis)       => [:facing-up]
+      (:curr-frame vis)   => 0)))
+
+(fact "lookup-frame gets the nth frame from a Visual component's frames"
+  (lookup-frame 0 (make-comp Visual .curr-frame. [.a. .b.])) => .a. 
+  (lookup-frame 1 (make-comp Visual .curr-frame. [.a. .b.])) => .b.)
+  ;(lookup-curr-frame (make-comp Visual 0 [])) => ?
+
+(fact "lookup-curr-frame gets a Visual component's curr-frame from its frames"
+  (let [vis (make-comp Visual 0 [:hello :there])]
+    (lookup-curr-frame vis) => :hello))
 
 (fact "lookup-img gets the asset content of the image looked up by Visual comp in the img-map"
   (with-redefs [ecs-test.systems.rendering/img-map (ref {:only-img (as-asset "only-img" identity (fn [_] "IMAGE: only-img"))})]
-    (lookup-img (make-comp Visual :only-img)) => "IMAGE: only-img"))
+    (lookup-img (make-comp Visual 0 [:only-img])) => "IMAGE: only-img"))
 
