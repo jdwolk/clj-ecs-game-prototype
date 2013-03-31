@@ -3,7 +3,7 @@
   (:use [clj-logging-config.log4j :exclude [log]]
         [clojure.tools.logging :rename {log tools-log}]))
 
-(def ^:dynamic *verbosity* 2)
+(def ^:dynamic *verbosity* 0)
 (def log-agent (agent 0))
 
 (def debug-lvls  (zipmap [:debug1 :debug2 :debug3]
@@ -15,12 +15,7 @@
 
 (set-logger!
   :pattern "%-6p%m%n"
-  :level :debug)
-
-;(def log-config {:pattern "%-6p%m%n" :level :debug})
-;(set-loggers!
-;  "ecs-test.stdout" log-config
-;  "ecs-test.file" (merge log-config {:out "out.log"}))
+  :level :info)
 
 (defn verbose-enough?
   "Meant for determining if debugN levels match the verbosity.

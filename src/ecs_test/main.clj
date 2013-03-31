@@ -48,8 +48,8 @@
                          (config-get [:screen-height]))
                (rand-direction nil)
                (rand-velocity 5)
-               (make-comp Visual 0 [:npc_up])))
-               ;(make-comp Behavior :random-movement)))
+               (make-comp Visual 0 [:npc_up])
+               (make-comp Behavior move-toward-player)))
 
 (def player-entity 
   (ref (make-body 10 300 :S)))
@@ -106,13 +106,14 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def mover (agent nil))
+(def mover (agent nil :error-handler (fn [ag err] (log :error :mover (.printStackTrace err)))))
 
 (defn movement [x]
   (send-off mover #'movement)
   (log :debug3 :move-ag "Moving entities")
   (doseq [npc (vals @npcs)] 
-    (let [new-comps (compfn move-toward-player @player-entity npc)
+    ;(let [new-comps (compfn move-toward-player @player-entity npc)
+    (let [new-comps (act npc @player-entity)
           moved-npc (apply assoc-comps npc (vals new-comps))]
       (log :debug3 :main "Moved npc: " moved-npc)
       (dosync (assoc-npc-in-pool moved-npc))))
@@ -122,7 +123,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ; Must initialize to screen before sending off animation
-(def animator (agent nil)) 
+(def animator (agent nil :error-handler (fn [ag err] (log :error :animator (.printStackTrack err)))))
 
 (defn animation [#^JPanel s]
   (send-off animator #'animation)
@@ -166,8 +167,9 @@
 
 (defn -main []
   (log :info :main "Starting game")
-  (load-entity! "entities/basicnpc")
-  (load-entity! "entities/player")
+  (load-entity! "entities/characters/basicnpc")
+  (load-entity! "entities/characters/player")
+  (load-entity! "entities/effects/explosion")
   (with-config (load-config "config.clj")
     (dosync
       (dotimes [_ 10]

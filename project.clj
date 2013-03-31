@@ -8,6 +8,7 @@
                              [lein-cloverage "1.0.2"]]}}
   :resource-paths ["src/ecs_test/game/assets"
                    "src/ecs_test/game/assets/sprites"
+                   "src/ecs_test/game/assets/effects"
                    "src/ecs_test/game/manifests"]
   :aot [ecs-test.main]
   :main ecs-test.main
@@ -18,7 +19,8 @@
                  [org.clojure/tools.logging "0.2.3"]
                  [clj-logging-config "1.9.10"]
                  [org.clojure/tools.logging "0.2.3"]]
-  :repositories {"stuart" "http://stuartsierra.com/maven2"})
+  :repositories {"stuart" "http://stuartsierra.com/maven2"}
+  :repl-options { :timeout 60000 })
 
 
 ;:warn-on-reflection true

@@ -1,5 +1,5 @@
 (ns ecs-test.systems.ai
-  (:require [ecs-test.core :refer [defcomponent make-comp ]]
+  (:require [ecs-test.core :refer [defcomponent make-comp get-comp]]
             [ecs-test.systems.movement :refer [delta-loc rand-direction
                                         rand-velocity ->Direction]]
             [ecs-test.systems.rendering :refer [direction-img]]
@@ -18,12 +18,11 @@
 ;  have more than one of...
 ;- also a huge example of where inter-component messaging is necessary
 
-;(defprotocol Behavior)
+(defcomponent Behavior [behavior-fn])
 
-;(defcomponent Behavior [behavior-fn])
-
-;(defn random-walking-behavior [maxsteps])
-
+(defn act [ent & ents]
+  (let [behavior-fn (:behavior-fn (get-comp ent :Behavior))]
+    (apply compfn (concat [behavior-fn ent] ents))))
 
 ;XXX is this a comp-fn?
 ;TODO take out hardcoded 5 in delta-loc :Velocity
@@ -41,9 +40,9 @@
                                         :Visual vis
                                         :Velocity vel}})}))
 
-(defn move-toward-player [{player-pos :Position}
-                          {et :EntType curr-pos :Position
-                           vis :Visual dir :Direction vel :Velocity}]
+(defn move-toward-player [{et :EntType curr-pos :Position
+                           vis :Visual dir :Direction vel :Velocity}
+                          {player-pos :Position}]
   (let [go-horiz (rand-nth [true false])
         new-vel (rand-velocity 5)
         new-dir (if go-horiz
@@ -62,6 +61,10 @@
                                         :Direction new-dir
                                         :Visual vis
                                         :Velocity vel}})}))
+
+(defn act-in-place [{vis :Visual :as ent}]
+  ;{:Visual (advance-frame ent)})
+  )
 
 (defn random-movement [ent one-in-x]
   "Entity -> int -> {Component}"

@@ -5,6 +5,11 @@
 (defn ents-satisfying [aspect-fn ents]
   (filter aspect-fn ents)) 
 
+(defn has-comp-vals [c vals-map]
+  (fn [entity]
+    (let [ent-comp (get-comp entity c)]
+      (every? (fn [[k v]] (= v (k ent-comp))) vals-map))))
+
 (defn has-all-comps [& comps]
   (fn [entity]
     (every? (partial get-comp entity) comps)))
