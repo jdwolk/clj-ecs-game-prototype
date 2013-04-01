@@ -1,6 +1,6 @@
 (use 'ecs-test.utils.misc)
 
-(def all_frames (keyrange :exp 4))
+(def all_frames (keyrange :exp 12))
 
 {:rendering
   {:dir-imgs

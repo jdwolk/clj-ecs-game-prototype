@@ -8,6 +8,9 @@
 
 (defn generate-id [] (str (java.util.UUID/randomUUID)))
 
+(defn wrap-inc [n maxn]
+  (if (< n (dec maxn)) (inc n) 0))
+
 (defn keyrange
   ([key end]
     (keyrange key 0 end))

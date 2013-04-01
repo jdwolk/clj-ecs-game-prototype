@@ -3,8 +3,8 @@
         (ecs-test.systems rendering movement core ident ai)
         (seesaw core graphics color))
   (:require [ecs-test.utils.configmgr :refer [with-config config-get load-config]]
-            [ecs-test.utils.logger :refer [log]]
-            [ecs-test.engine.time :refer [calc-fps]])
+            [ecs-test.utils.logger    :refer [log]]
+            [ecs-test.engine.time     :refer [calc-fps]])
   (:import (ecs-test.systems.rendering.Visual)
            (ecs-test.systems.ident.EntType)
            (ecs-test.systems.movement.Position)
@@ -23,6 +23,9 @@
 ;TODO move this somewhere else!!!
 ;XXX THIS IS HORRID TEST CODE
 (def npcs (ref {}))
+
+(defn clear-entities! []
+  (dosync (ref-set npcs {})))
 
 ;XXX Don't like this...
 ; its a horrible hack
@@ -50,6 +53,14 @@
                (rand-velocity 5)
                (make-comp Visual 0 [:npc_up])
                (make-comp Behavior move-toward-player)))
+
+(defn explosion []
+  (make-entity (make-comp EntType :explosion)
+               (rand-pos 300 300)
+               (make-comp Direction :N nil)
+               (make-comp Velocity 0)
+               (make-comp Visual 0 (lookup-ent-frames :explosion))
+               (make-comp Behavior act-in-place)))
 
 (def player-entity 
   (ref (make-body 10 300 :S)))
@@ -98,6 +109,7 @@
     "Up"   (alter player-entity assoc-comps (make-comp Direction :N (:dir (get-comp @player-entity :Direction))))
     "Left" (alter player-entity assoc-comps (make-comp Direction :W (:dir (get-comp @player-entity :Direction))))
     "Right" (alter player-entity assoc-comps (make-comp Direction :E (:dir (get-comp @player-entity :Direction))))
+    "Space" (assoc-npc-in-pool (explosion))
     :else  (log :error :MAIN "SOMETHING was pressed"))))
 
 (defn key-up [#^KeyEvent e]
@@ -165,11 +177,12 @@
     (.addWindowListener f (kill-agents-on-close [mover animator]))
     (-> f pack! show!)))
 
-(defn -main []
-  (log :info :main "Starting game")
-  (load-entity! "entities/characters/basicnpc")
-  (load-entity! "entities/characters/player")
-  (load-entity! "entities/effects/explosion")
+(defn reset-world! []
+  (log :info :main "Resetting world")
+  (clear-entities!)
+  (load-resources! "entities/characters/basicnpc")
+  (load-resources! "entities/characters/player")
+  (load-resources! "entities/effects/explosion")
   (with-config (load-config "config.clj")
     (dosync
       (dotimes [_ 10]
@@ -179,6 +192,10 @@
                             (config-get [:screen-height]))))
     (send-off animator animation)
     (send-off mover movement)
-    (await-for 200 animator)
-    (setup-frame)))
+    (await-for 200 animator)))
+
+(defn -main []
+  (reset-world!)
+  (log :info :main "Starting game")
+  (setup-frame))
 

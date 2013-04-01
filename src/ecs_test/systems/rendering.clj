@@ -1,6 +1,7 @@
 (ns ecs-test.systems.rendering
   (:require [ecs-test.core            :refer [defcomponent make-comp]]
             [ecs-test.utils.assetmgr  :refer [load-images asset-content asset-name load-manifest filename->keyword get-system]]
+            [ecs-test.utils.misc      :refer [wrap-inc]]
             [ecs-test.utils.logger    :refer [log]]
             [clojure.set              :refer [union]]))
 
@@ -25,7 +26,7 @@
     (log :debug2 :rendering "Contents of new img-map: " new-map)
     new-map))
 
-(defn load-entity!
+(defn load-resources!
   [man-file]
   (let [entity-manifest (load-manifest man-file)
         manifest-content (asset-content entity-manifest)
@@ -40,10 +41,20 @@
 (defn lookup-curr-frame [vis]
   (lookup-frame (:curr-frame vis) vis))
 
+(defn next-frame-vis [vis]
+  (let [{:keys [curr-frame frames]} vis]
+    (make-comp Visual (wrap-inc curr-frame (count frames)) frames)))
+
+(defn lookup-ent-frames
+  ([ent-type]
+    (lookup-ent-frames ent-type :N))
+  ([ent-type dir]
+    (dir (ent-type @dir-map))))
+
 ;;;;;;;;;;; Component fns ;;;;;;;;;;;;;
 
-(defn wrap-inc [n maxn]
-  (if (< n (dec maxn)) (inc n) 0))
+(defn advance-frame [{vis :Visual :as ent}]
+  (next-frame-vis vis))
 
 (defn direction-img [{et :EntType dir :Direction vis :Visual vel :Velocity}]
   "Direction -> Visual -> Visual
@@ -53,10 +64,8 @@
   (let [e-type (:ent-type et)
         {curr-dir :dir old-dir :prev-dir} dir
         new-vis (if (or (not (= old-dir curr-dir)) (= 0 (:units vel)))
-                    (make-comp Visual 0 (curr-dir (e-type @dir-map)))
-                    (make-comp Visual 
-                               (wrap-inc  (:curr-frame vis) (count (:frames vis)))
-                               (:frames vis)))]
+                    (make-comp Visual 0 (lookup-ent-frames e-type curr-dir))
+                    (next-frame-vis vis))]
     (log :debug2 :rendering "(direction-img) old-dir=" old-dir
                              ", dir=" curr-dir
                              ", equal?=" (= old-dir curr-dir)

@@ -2,7 +2,7 @@
   (:require [ecs-test.core :refer [defcomponent make-comp get-comp]]
             [ecs-test.systems.movement :refer [delta-loc rand-direction
                                         rand-velocity ->Direction]]
-            [ecs-test.systems.rendering :refer [direction-img]]
+            [ecs-test.systems.rendering :refer [direction-img advance-frame]]
             ecs-test.systems.ident)
   (:use (ecs-test.systems core))
   (:import (ecs-test.systems.movement.Position)
@@ -18,6 +18,7 @@
 ;  have more than one of...
 ;- also a huge example of where inter-component messaging is necessary
 
+;TODO this only allows a single behavior per entity...
 (defcomponent Behavior [behavior-fn])
 
 (defn act [ent & ents]
@@ -62,9 +63,8 @@
                                         :Visual vis
                                         :Velocity vel}})}))
 
-(defn act-in-place [{vis :Visual :as ent}]
-  ;{:Visual (advance-frame ent)})
-  )
+(defn act-in-place [{vis :Visual :as ent} & _]
+  {:Visual (advance-frame ent)})
 
 (defn random-movement [ent one-in-x]
   "Entity -> int -> {Component}"
