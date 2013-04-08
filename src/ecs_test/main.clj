@@ -124,7 +124,6 @@
   (send-off mover #'movement)
   (log :debug3 :move-ag "Moving entities")
   (doseq [npc (vals @npcs)] 
-    ;(let [new-comps (compfn move-toward-player @player-entity npc)
     (let [new-comps (act npc @player-entity)
           moved-npc (apply assoc-comps npc (vals new-comps))]
       (log :debug3 :main "Moved npc: " moved-npc)
@@ -192,7 +191,7 @@
                             (config-get [:screen-height]))))
     (send-off animator animation)
     (send-off mover movement)
-    (await-for 200 animator)))
+    (await animator)))
 
 (defn -main []
   (reset-world!)
