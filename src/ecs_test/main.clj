@@ -62,7 +62,7 @@
                (make-comp Visual 0 (lookup-ent-frames :explosion))
                (make-comp Behavior act-in-place)))
 
-(def player-entity 
+(def player-entity
   (ref (make-body 10 300 :S)))
 
 ;TODO move somewhere else
@@ -73,14 +73,14 @@
           (style :background (color 224 0 0 128)))))
 
 (defn draw-text [#^SunGraphics2D g words x y size]
-                 ;& {s :size x :x y :y 
+                 ;& {s :size x :x y :y
                  ;:or {s 24 x 20 y 20}}]
   (push g
     (draw g (string-shape x y words)
             (style :foreground (color 0 0 0)
                    :font (str "ARIAL-BOLD-" size)))))
 
- 
+
 (defn paint-world [#^JPanel c #^SunGraphics2D g]
   (log :debug3 :animation-ag "Painting screen")
   (let [start-time (System/nanoTime)
@@ -99,18 +99,18 @@
     (let [pos (get-comp @player-entity :Position)]
       (draw-text g (str "x: " (:x pos)) 20 35 15)
       (draw-text g (str "y: " (:y pos)) 20 50 15))))
-        
+
 ;TODO carryover fns from initial prototype
 (defn key-dispatch [#^KeyEvent e]
   (dosync
-  (alter player-entity assoc-comps (make-comp Velocity 5))
+  (alter player-entity assoc-comps (make-comp Velocity 10))
   (case (KeyEvent/getKeyText (.getKeyCode e))
-    "Down" (alter player-entity assoc-comps (make-comp Direction :S (:dir (get-comp @player-entity :Direction))))
-    "Up"   (alter player-entity assoc-comps (make-comp Direction :N (:dir (get-comp @player-entity :Direction))))
-    "Left" (alter player-entity assoc-comps (make-comp Direction :W (:dir (get-comp @player-entity :Direction))))
-    "Right" (alter player-entity assoc-comps (make-comp Direction :E (:dir (get-comp @player-entity :Direction))))
-    "Space" (assoc-npc-in-pool (explosion))
-    :else  (log :error :MAIN "SOMETHING was pressed"))))
+    "↓" (alter player-entity assoc-comps (make-comp Direction :S (:dir (get-comp @player-entity :Direction))))
+    "↑"   (alter player-entity assoc-comps (make-comp Direction :N (:dir (get-comp @player-entity :Direction))))
+    "←" (alter player-entity assoc-comps (make-comp Direction :W (:dir (get-comp @player-entity :Direction))))
+    "→" (alter player-entity assoc-comps (make-comp Direction :E (:dir (get-comp @player-entity :Direction))))
+    "␣" (assoc-npc-in-pool (explosion))
+    :else  (log :error :MAIN "SOMETHING was pressed" e))))
 
 (defn key-up [#^KeyEvent e]
   (dosync
@@ -123,7 +123,8 @@
 (defn movement [x]
   (send-off mover #'movement)
   (log :debug3 :move-ag "Moving entities")
-  (doseq [npc (vals @npcs)] 
+  (doseq [npc (vals @npcs)]
+    ;(let [new-comps (compfn move-toward-player @player-entity npc)
     (let [new-comps (act npc @player-entity)
           moved-npc (apply assoc-comps npc (vals new-comps))]
       (log :debug3 :main "Moved npc: " moved-npc)
@@ -186,12 +187,12 @@
     (dosync
       (dotimes [_ 10]
         (assoc-npc-in-pool (make-npc))))
-    (send-off animator 
+    (send-off animator
       (fn [_] (setup-screen (config-get [:screen-width])
                             (config-get [:screen-height]))))
     (send-off animator animation)
     (send-off mover movement)
-    (await animator)))
+    (await-for 200 animator)))
 
 (defn -main []
   (reset-world!)

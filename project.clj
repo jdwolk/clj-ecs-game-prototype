@@ -15,7 +15,6 @@
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [seesaw "1.4.2"]
                  [midje "1.4.0"]
-                 [com.stuartsierra/lazytest "1.2.3"]
                  [org.clojure/tools.logging "0.2.3"]
                  [clj-logging-config "1.9.10"]
                  [org.clojure/tools.logging "0.2.3"]]

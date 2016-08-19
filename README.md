@@ -1,13 +1,15 @@
 # ecs-test
 
-A Clojure library designed to ... well, that part is up to you.
+The beginnings of a game testing out entity-component systems
 
 ## Usage
 
-FIXME
+```sh
+$ lein repl
+```
 
-## License
+(in repl)
 
-Copyright © 2012 FIXME
-
-Distributed under the Eclipse Public License, the same as Clojure.
+```
+(-main)
+```
